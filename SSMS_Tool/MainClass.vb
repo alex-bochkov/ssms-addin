@@ -141,6 +141,8 @@ Public Class Connect
                 'Dim iRow = GridStorage.TotalNumberOfRows - 1
                 'Dim iCol = GridStorage.TotalNumberOfColumns - 1
 
+                'thanks - http://www.tsingfun.com/index.php?m=wap&siteid=1&c=index&a=show&catid=37&typeid=0&id=478&page=3&remains=true
+
                 For iRow = 0 To GridStorage.TotalNumberOfRows - 1
                     For iCol = 1 To GridStorage.TotalNumberOfColumns - 1
                         Str = Str + GridStorage.GetCellDataAsString(iRow, iCol)
