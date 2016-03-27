@@ -67,8 +67,10 @@
     <Reference Include="SqlPackageBase">
       <HintPath>E:\Program Files (x86)\Microsoft SQL Server\120\Tools\Binn\ManagementStudio\SqlPackageBase.dll</HintPath>
     </Reference>
+    <Reference Include="SqlWorkbench.Interfaces, Version=12.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
