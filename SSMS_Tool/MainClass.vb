@@ -4,6 +4,7 @@ Imports EnvDTE
 Imports EnvDTE80
 Imports Microsoft.VisualStudio.CommandBars
 Imports Microsoft.SqlServer.Management.UI.VSIntegration
+'Imports Microsoft.SqlServer.Management.UI.Grid
 Imports System.Resources
 Imports System.Reflection
 Imports System.Management
@@ -110,6 +111,16 @@ Public Class Connect
                 Dim field = objType2.GetField("m_sqlResultsControl", BindingFlags.NonPublic Or BindingFlags.Instance)
                 Dim SQLResultsControl = field.GetValue(Result)
 
+                'Dim gridContainers As CollectionBase = GetNonPublicField(gridResultsPage, "m_gridContainers")
+
+                'Dim ienum As IEnumerator = gridContainers.GetEnumerator()
+                'ienum.MoveNext()
+
+                'Dim gridResultGrid As Object = GetNonPublicField(ienum.Current, "m_grid")
+                ''Return gridResultGrid As IGridControl;
+                'Dim gs As Object = gridResultGrid.GridStorage
+                'Dim Text = gs.GetCellDataAsString(0, 1)
+
                 Dim objType3 = SQLResultsControl.GetType()
                 Dim field2 = objType3.GetField("m_batchConsumer", BindingFlags.NonPublic Or BindingFlags.Instance)
                 Dim batchConsumer = field2.GetValue(SQLResultsControl)
@@ -118,15 +129,31 @@ Public Class Connect
                 Dim field3 = objType4.GetField("m_gridContainer", BindingFlags.NonPublic Or BindingFlags.Instance)
                 Dim gridResultsPage = field3.GetValue(batchConsumer)
 
-                Dim Grid = gridResultsPage.Grid
-                Grid.BackColor = Drawing.Color.Red
+                Dim Grid = GetNonPublicField(gridResultsPage, "m_grid")
 
+                Dim GridStorage = Grid.GridStorage
+                'Grid.BackColor = Drawing.Color.Red
 
+                'Dim Text = GridStorage.GetCellDataAsString(0, 1)
 
-                If Not document Is Nothing Then
-                    Dim selection As TextSelection = DirectCast(document.Selection, TextSelection)
-                    selection.Insert("Welcome to SSMS! This sample is brought to you by SSMSBoost add-in team.", DirectCast(vsInsertFlags.vsInsertFlagsContainNewText, Int32))
-                End If
+                Dim Str = ""
+
+                'Dim iRow = GridStorage.TotalNumberOfRows - 1
+                'Dim iCol = GridStorage.TotalNumberOfColumns - 1
+
+                For iRow = 0 To GridStorage.TotalNumberOfRows - 1
+                    For iCol = 1 To GridStorage.TotalNumberOfColumns - 1
+                        Str = Str + GridStorage.GetCellDataAsString(iRow, iCol)
+                    Next
+                    Str = Str + vbNewLine
+                Next
+
+                MsgBox(Str)
+
+                'If Not document Is Nothing Then
+                '    Dim selection As TextSelection = DirectCast(document.Selection, TextSelection)
+                '    selection.Insert("Welcome to SSMS! This sample is brought to you by SSMSBoost add-in team.", DirectCast(vsInsertFlags.vsInsertFlagsContainNewText, Int32))
+                'End If
                 handled = True
                 Return
             End If
