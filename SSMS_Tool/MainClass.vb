@@ -10,6 +10,10 @@ Imports System.Reflection
 Imports System.Management
 Imports System.Globalization
 Imports Microsoft.SqlServer.Management
+Imports DocumentFormat.OpenXml.Packaging
+Imports System.IO
+Imports DocumentFormat.OpenXml
+Imports DocumentFormat.OpenXml.Spreadsheet
 Imports System.Windows.Forms
 
 Public Class Connect
@@ -150,7 +154,20 @@ Public Class Connect
                     Str = Str + vbNewLine
                 Next
 
-                MsgBox(Str)
+
+                Try
+
+                    ExportDataSet(GridStorage)
+
+                    MsgBox("File saved and copied to clipboard!")
+
+                Catch ex As Exception
+                    MsgBox(ex.Message)
+                End Try
+
+
+
+
 
                 'If Not document Is Nothing Then
                 '    Dim selection As TextSelection = DirectCast(document.Selection, TextSelection)
@@ -162,6 +179,81 @@ Public Class Connect
         End If
 
     End Sub
+
+
+    Private Sub ExportDataSet(ds As Object)
+
+        Dim mem As MemoryStream = New MemoryStream()
+
+        Using workbook = SpreadsheetDocument.Create(mem, DocumentFormat.OpenXml.SpreadsheetDocumentType.Workbook)
+
+            Dim workbookPart = workbook.AddWorkbookPart()
+
+            workbook.WorkbookPart.Workbook = New DocumentFormat.OpenXml.Spreadsheet.Workbook()
+
+            workbook.WorkbookPart.Workbook.Sheets = New DocumentFormat.OpenXml.Spreadsheet.Sheets()
+
+            ' For Each table As System.Data.DataTable In ds.Tables
+
+            Dim sheetPart = workbook.WorkbookPart.AddNewPart(Of WorksheetPart)()
+            Dim sheetData = New DocumentFormat.OpenXml.Spreadsheet.SheetData()
+            sheetPart.Worksheet = New DocumentFormat.OpenXml.Spreadsheet.Worksheet(sheetData)
+
+            Dim sheets As DocumentFormat.OpenXml.Spreadsheet.Sheets = workbook.WorkbookPart.Workbook.GetFirstChild(Of DocumentFormat.OpenXml.Spreadsheet.Sheets)()
+            Dim relationshipId As String = workbook.WorkbookPart.GetIdOfPart(sheetPart)
+
+            Dim sheetId As UInteger = 1
+            If sheets.Elements(Of DocumentFormat.OpenXml.Spreadsheet.Sheet)().Count() > 0 Then
+                sheetId = sheets.Elements(Of DocumentFormat.OpenXml.Spreadsheet.Sheet)().[Select](Function(s) s.SheetId.Value).Max() + 1
+            End If
+
+            Dim sheet As New DocumentFormat.OpenXml.Spreadsheet.Sheet() With {.Id = relationshipId, .SheetId = sheetId, .Name = "MySheet"}
+            sheets.Append(sheet)
+
+            Dim headerRow As New DocumentFormat.OpenXml.Spreadsheet.Row()
+
+            Dim columns As List(Of [String]) = New List(Of String)()
+            For i = 1 To ds.TotalNumberOfColumns - 1
+
+                columns.Add("Column_" + i.ToString)
+
+                Dim cell As New DocumentFormat.OpenXml.Spreadsheet.Cell()
+                cell.DataType = DocumentFormat.OpenXml.Spreadsheet.CellValues.[String]
+                cell.CellValue = New DocumentFormat.OpenXml.Spreadsheet.CellValue("Column_" + i.ToString)
+                headerRow.AppendChild(cell)
+
+            Next
+            sheetData.AppendChild(headerRow)
+
+            For iRow = 0 To ds.TotalNumberOfRows - 1
+
+                Dim newRow As New DocumentFormat.OpenXml.Spreadsheet.Row()
+                For iCol = 1 To ds.TotalNumberOfColumns - 1
+                    Dim Val = ds.GetCellDataAsString(iRow, iCol)
+
+                    Dim cell As New DocumentFormat.OpenXml.Spreadsheet.Cell()
+                    cell.DataType = DocumentFormat.OpenXml.Spreadsheet.CellValues.[String]
+                    cell.CellValue = New DocumentFormat.OpenXml.Spreadsheet.CellValue(Val)
+                    '
+                    newRow.AppendChild(cell)
+                Next
+                sheetData.AppendChild(newRow)
+            Next
+
+            'Next
+        End Using
+
+        Dim f As String = "C:\temp\excel_export.xlsx"
+
+        My.Computer.FileSystem.WriteAllBytes(f, mem.ToArray, False)
+
+
+        'Dim d As New DataObject(DataFormats.FileDrop, f)
+        'Clipboard.SetDataObject(d, True)
+
+    End Sub
+
+
 
     Function GetNonPublicField(obj As Object, field As String) As Object
 
