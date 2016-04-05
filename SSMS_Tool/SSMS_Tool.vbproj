@@ -140,6 +140,13 @@
     </None>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="QueryTemplates\Blocking\Current blocks.sql" />
+    <Content Include="QueryTemplates\Performance\Outdated statistics.sql" />
+    <Content Include="QueryTemplates\Performance\The longest running Sprocs.sql" />
+    <Content Include="QueryTemplates\Replication\Last restored log files SQL2005.sql" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

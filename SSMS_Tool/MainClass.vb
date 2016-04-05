@@ -23,8 +23,12 @@ Public Class Connect
 
     Private _applicationObject As DTE2
     Private _addInInstance As AddIn
+    Dim myTemporaryToolbar As CommandBar
+    Dim myTemporaryPopup As CommandBarPopup
 
     Private QueryExecuteEvent As CommandEvents
+
+    Private TemplatesList As Hashtable = New Hashtable
 
     Public Sub New()
         'MsgBox("Test message")
@@ -75,10 +79,30 @@ Public Class Connect
                 MsgBox(generatedExceptionName.Message)
             End Try
 
+        ElseIf connectMode = ext_ConnectMode.ext_cm_Startup Then
+
+            RecreateTemplates()
+
         End If
 
     End Sub
     Public Sub OnDisconnection(disconnectMode As ext_DisconnectMode, ByRef [custom] As Array) Implements IDTExtensibility2.OnDisconnection
+
+        Try
+            '' When the add-in closes, get rid of the toolbar button.
+            'If Not (myTemporaryToolbar Is Nothing) Then
+            '    myTemporaryToolbar.Delete()
+            'End If
+            ' When the add-in closes, get rid of the toolbar button.
+            If Not (myTemporaryPopup Is Nothing) Then
+                myTemporaryPopup.Delete()
+            End If
+
+
+        Catch e As System.Exception
+            System.Windows.Forms.MessageBox.Show(e.ToString)
+        End Try
+
     End Sub
     Public Sub OnAddInsUpdate(ByRef [custom] As Array) Implements IDTExtensibility2.OnAddInsUpdate
     End Sub
@@ -92,6 +116,9 @@ Public Class Connect
             If commandName = "SSMSTool.Connect.SSMSAddin" Then
                 status = vsCommandStatus.vsCommandStatusSupported Or vsCommandStatus.vsCommandStatusEnabled
                 Return
+            ElseIf commandName.Contains("SSMSTool") Then 'let them all work
+                status = vsCommandStatus.vsCommandStatusSupported Or vsCommandStatus.vsCommandStatusEnabled
+                Return
             End If
         End If
 
@@ -100,83 +127,205 @@ Public Class Connect
 
         handled = False
         If executeOption = vsCommandExecOption.vsCommandExecOptionDoDefault Then
-            If commandName = "SSMSTool.Connect.SSMSAddin" Then
+
+            If commandName.Contains("SSMSTemplates") Then
+
                 Dim document As Document = (DirectCast(ServiceCache.ExtensibilityModel, DTE2)).ActiveDocument
 
+                Dim TemplateFile = TemplatesList.Item(commandName)
+                If Not TemplateFile Is Nothing Then
 
-                'Dim sqlScriptEditorControl As Object = InvokeMethod(ServiceCache.ScriptFactory, "GetCurrentlyActiveFrameDocView", BindingFlags.NonPublic Or BindingFlags.Instance, New Object() {ServiceCache.VSMonitorSelection, False, Nothing})
-                ' m_SQLResultsControl = GetField(sqlScriptEditorControl, "m_sqlResultsControl", BindingFlags.NonPublic Or BindingFlags.Instance)
+                    Dim Text = My.Computer.FileSystem.ReadAllText(TemplateFile)
 
-                Dim objType = ServiceCache.ScriptFactory.GetType()
-                Dim method1 = objType.GetMethod("GetCurrentlyActiveFrameDocView", BindingFlags.NonPublic Or BindingFlags.Instance)
-                Dim Result = method1.Invoke(ServiceCache.ScriptFactory, New Object() {ServiceCache.VSMonitorSelection, False, Nothing})
+                    Dim txt As TextDocument = CType(document.Object("TextDocument"), TextDocument)
 
-                Dim objType2 = Result.GetType()
-                Dim field = objType2.GetField("m_sqlResultsControl", BindingFlags.NonPublic Or BindingFlags.Instance)
-                Dim SQLResultsControl = field.GetValue(Result)
+                    'get an edit point
+                    Dim ep As EditPoint = txt.Selection.ActivePoint.CreateEditPoint
 
-                'Dim gridContainers As CollectionBase = GetNonPublicField(gridResultsPage, "m_gridContainers")
+                    'get a start point
+                    Dim sp As EditPoint = txt.Selection.ActivePoint.CreateEditPoint
 
-                'Dim ienum As IEnumerator = gridContainers.GetEnumerator()
-                'ienum.MoveNext()
+                    ''open the undo context
+                    'Dim isOpen As Boolean = Application.UndoContext.IsOpen
+                    'If Not isOpen Then Application.UndoContext.Open("SmartPaster", False)
 
-                'Dim gridResultGrid As Object = GetNonPublicField(ienum.Current, "m_grid")
-                ''Return gridResultGrid As IGridControl;
-                'Dim gs As Object = gridResultGrid.GridStorage
-                'Dim Text = gs.GetCellDataAsString(0, 1)
+                    'clear the selection
+                    If Not txt.Selection.IsEmpty Then txt.Selection.Delete()
 
-                Dim objType3 = SQLResultsControl.GetType()
-                Dim field2 = objType3.GetField("m_batchConsumer", BindingFlags.NonPublic Or BindingFlags.Instance)
-                Dim batchConsumer = field2.GetValue(SQLResultsControl)
+                    'insert the text
+                    'ep.Insert(Indent(text, ep.LineCharOffset))
+                    ep.Insert(Text)
 
-                Dim objType4 = batchConsumer.GetType()
-                Dim field3 = objType4.GetField("m_gridContainer", BindingFlags.NonPublic Or BindingFlags.Instance)
-                Dim gridResultsPage = field3.GetValue(batchConsumer)
+                    'smart format
+                    'If Configuration.AutoFormatAfterPaste Then
+                    'sp.SmartFormat(ep)
+                    'End If
 
-                Dim Grid = GetNonPublicField(gridResultsPage, "m_grid")
 
-                Dim GridStorage = Grid.GridStorage
-                'Grid.BackColor = Drawing.Color.Red
 
-                'Dim Text = GridStorage.GetCellDataAsString(0, 1)
 
-                Dim Str = ""
+                End If
 
-                'Dim iRow = GridStorage.TotalNumberOfRows - 1
-                'Dim iCol = GridStorage.TotalNumberOfColumns - 1
 
-                'thanks - http://www.tsingfun.com/index.php?m=wap&siteid=1&c=index&a=show&catid=37&typeid=0&id=478&page=3&remains=true
 
-                For iRow = 0 To GridStorage.TotalNumberOfRows - 1
-                    For iCol = 1 To GridStorage.TotalNumberOfColumns - 1
-                        Str = Str + GridStorage.GetCellDataAsString(iRow, iCol)
+            ElseIf commandName = "SSMSTool.Connect.SSMSAddin" Then
+                    Dim document As Document = (DirectCast(ServiceCache.ExtensibilityModel, DTE2)).ActiveDocument
+
+
+                    'Dim sqlScriptEditorControl As Object = InvokeMethod(ServiceCache.ScriptFactory, "GetCurrentlyActiveFrameDocView", BindingFlags.NonPublic Or BindingFlags.Instance, New Object() {ServiceCache.VSMonitorSelection, False, Nothing})
+                    ' m_SQLResultsControl = GetField(sqlScriptEditorControl, "m_sqlResultsControl", BindingFlags.NonPublic Or BindingFlags.Instance)
+
+                    Dim objType = ServiceCache.ScriptFactory.GetType()
+                    Dim method1 = objType.GetMethod("GetCurrentlyActiveFrameDocView", BindingFlags.NonPublic Or BindingFlags.Instance)
+                    Dim Result = method1.Invoke(ServiceCache.ScriptFactory, New Object() {ServiceCache.VSMonitorSelection, False, Nothing})
+
+                    Dim objType2 = Result.GetType()
+                    Dim field = objType2.GetField("m_sqlResultsControl", BindingFlags.NonPublic Or BindingFlags.Instance)
+                    Dim SQLResultsControl = field.GetValue(Result)
+
+                    'Dim gridContainers As CollectionBase = GetNonPublicField(gridResultsPage, "m_gridContainers")
+
+                    'Dim ienum As IEnumerator = gridContainers.GetEnumerator()
+                    'ienum.MoveNext()
+
+                    'Dim gridResultGrid As Object = GetNonPublicField(ienum.Current, "m_grid")
+                    ''Return gridResultGrid As IGridControl;
+                    'Dim gs As Object = gridResultGrid.GridStorage
+                    'Dim Text = gs.GetCellDataAsString(0, 1)
+
+                    Dim objType3 = SQLResultsControl.GetType()
+                    Dim field2 = objType3.GetField("m_batchConsumer", BindingFlags.NonPublic Or BindingFlags.Instance)
+                    Dim batchConsumer = field2.GetValue(SQLResultsControl)
+
+                    Dim objType4 = batchConsumer.GetType()
+                    Dim field3 = objType4.GetField("m_gridContainer", BindingFlags.NonPublic Or BindingFlags.Instance)
+                    Dim gridResultsPage = field3.GetValue(batchConsumer)
+
+                    Dim Grid = GetNonPublicField(gridResultsPage, "m_grid")
+
+                    Dim GridStorage = Grid.GridStorage
+                    'Grid.BackColor = Drawing.Color.Red
+
+                    'Dim Text = GridStorage.GetCellDataAsString(0, 1)
+
+                    Dim Str = ""
+
+                    'Dim iRow = GridStorage.TotalNumberOfRows - 1
+                    'Dim iCol = GridStorage.TotalNumberOfColumns - 1
+
+                    'thanks - http://www.tsingfun.com/index.php?m=wap&siteid=1&c=index&a=show&catid=37&typeid=0&id=478&page=3&remains=true
+
+                    For iRow = 0 To GridStorage.TotalNumberOfRows - 1
+                        For iCol = 1 To GridStorage.TotalNumberOfColumns - 1
+                            Str = Str + GridStorage.GetCellDataAsString(iRow, iCol)
+                        Next
+                        Str = Str + vbNewLine
                     Next
-                    Str = Str + vbNewLine
-                Next
 
 
-                Try
+                    Try
 
-                    ExportDataSet(GridStorage)
+                        ExportDataSet(GridStorage)
 
-                    MsgBox("File saved and copied to clipboard!")
+                        MsgBox("File saved and copied to clipboard!")
 
-                Catch ex As Exception
-                    MsgBox(ex.Message)
-                End Try
+                    Catch ex As Exception
+                        MsgBox(ex.Message)
+                    End Try
 
 
 
 
 
-                'If Not document Is Nothing Then
-                '    Dim selection As TextSelection = DirectCast(document.Selection, TextSelection)
-                '    selection.Insert("Welcome to SSMS! This sample is brought to you by SSMSBoost add-in team.", DirectCast(vsInsertFlags.vsInsertFlagsContainNewText, Int32))
-                'End If
-                handled = True
-                Return
+                    'If Not document Is Nothing Then
+                    '    Dim selection As TextSelection = DirectCast(document.Selection, TextSelection)
+                    '    selection.Insert("Welcome to SSMS! This sample is brought to you by SSMSBoost add-in team.", DirectCast(vsInsertFlags.vsInsertFlagsContainNewText, Int32))
+                    'End If
+                    handled = True
+                    Return
+                End If
             End If
-        End If
+
+    End Sub
+
+    Private Sub RecreateTemplates()
+
+        TemplatesList = New Hashtable
+
+        Dim CommandBars = DirectCast(_applicationObject.CommandBars, CommandBars)
+        myTemporaryToolbar = CommandBars.Item("SQL Editor") 'CommandBars.Add("SSMSAddin", MsoBarPosition.msoBarTop, System.Type.Missing, True)
+
+
+        For Each Cmd2 In DirectCast(_applicationObject.Commands, Commands2)
+            If Cmd2.Name.Contains("SSMSTemplates") Then
+                Cmd2.Delete()
+            End If
+        Next
+
+        Dim Folder = "C:\Users\abochkov\Source\Repos\ssms-addin\SSMS_Tool\QueryTemplates"
+        Dim i = 1
+
+        myTemporaryPopup = myTemporaryToolbar.Controls.Add(MsoControlType.msoControlPopup, System.Type.Missing, System.Type.Missing, System.Type.Missing, True)
+
+        myTemporaryPopup.Caption = "Templates"
+        myTemporaryPopup.BeginGroup = False
+        myTemporaryPopup.CommandBar.Name = "Templates"
+        myTemporaryPopup.Visible = True
+
+        CreateCommandsInRecursion(myTemporaryPopup.CommandBar, Folder, i)
+
+
+
+        ' Make visible the toolbar
+        myTemporaryToolbar.Visible = True
+
+
+    End Sub
+
+    Sub CreateCommandsInRecursion(ByRef Owner As CommandBar, Folder As String, ByRef i As Integer)
+
+        Dim Dirs = My.Computer.FileSystem.GetDirectories(Folder)
+
+        For Each DirStr In Dirs
+
+            Dim DI = My.Computer.FileSystem.GetFileInfo(DirStr)
+
+            Dim popup2 As CommandBarPopup = Owner.Controls.Add(MsoControlType.msoControlPopup, System.Type.Missing, System.Type.Missing, 1, True)
+
+            popup2.Caption = DI.Name
+            popup2.BeginGroup = False
+            'popup2.CommandBar.Name = "Templates"
+            popup2.Visible = True
+
+            CreateCommandsInRecursion(popup2.CommandBar, DirStr, i)
+
+            i = i + 1
+        Next
+
+
+        Dim Files = My.Computer.FileSystem.GetFiles(Folder)
+
+        For Each File In Files
+
+            Dim FI = My.Computer.FileSystem.GetFileInfo(File)
+
+            Dim cmd As Command = _applicationObject.Commands.AddNamedCommand(_addInInstance, "SSMSTemplates_" + i.ToString, FI.Name, "", True, ,
+                                                                 Nothing, vsCommandStatus.vsCommandStatusSupported Or vsCommandStatus.vsCommandStatusEnabled)
+
+            Dim myToolBarButton = DirectCast(cmd.AddControl(Owner, Owner.Controls.Count + 1), CommandBarButton)
+
+            myToolBarButton.Caption = FI.Name
+            ' myToolBarButton.Parameter = FI.FullName
+            'myToolBarButton.BeginGroup = Owner
+            myToolBarButton.Style = MsoButtonStyle.msoButtonIconAndCaption ' It could be also msoButtonIcon
+
+            TemplatesList.Add(cmd.Name, FI.FullName)
+
+            i = i + 1
+
+
+        Next
+
 
     End Sub
 
