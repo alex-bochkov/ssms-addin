@@ -143,6 +143,8 @@
   <ItemGroup />
   <ItemGroup>
     <Content Include="QueryTemplates\Blocking\Current blocks.sql" />
+    <Content Include="QueryTemplates\Performance\Current running jobs.sql" />
+    <Content Include="QueryTemplates\Performance\Open transactions with query plans.sql" />
     <Content Include="QueryTemplates\Performance\Outdated statistics.sql" />
     <Content Include="QueryTemplates\Performance\The longest running Sprocs.sql" />
     <Content Include="QueryTemplates\Performance\Wait stats.sql" />
