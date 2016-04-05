@@ -145,6 +145,7 @@
     <Content Include="QueryTemplates\Blocking\Current blocks.sql" />
     <Content Include="QueryTemplates\Performance\Outdated statistics.sql" />
     <Content Include="QueryTemplates\Performance\The longest running Sprocs.sql" />
+    <Content Include="QueryTemplates\Performance\Wait stats.sql" />
     <Content Include="QueryTemplates\Replication\Last restored log files SQL2005.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
