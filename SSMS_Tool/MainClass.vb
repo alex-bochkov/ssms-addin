@@ -128,7 +128,11 @@ Public Class Connect
         handled = False
         If executeOption = vsCommandExecOption.vsCommandExecOptionDoDefault Then
 
-            If commandName.Contains("SSMSTemplates") Then
+            If commandName.Contains("SSMSRefreshTemplates") Then
+
+                RecreateTemplates()
+
+            ElseIf commandName.Contains("SSMSTemplates") Then
 
                 Dim document As Document = (DirectCast(ServiceCache.ExtensibilityModel, DTE2)).ActiveDocument
 
@@ -162,14 +166,12 @@ Public Class Connect
                     'End If
 
 
-
-
                 End If
 
 
 
             ElseIf commandName = "SSMSTool.Connect.SSMSAddin" Then
-                    Dim document As Document = (DirectCast(ServiceCache.ExtensibilityModel, DTE2)).ActiveDocument
+                Dim document As Document = (DirectCast(ServiceCache.ExtensibilityModel, DTE2)).ActiveDocument
 
 
                     'Dim sqlScriptEditorControl As Object = InvokeMethod(ServiceCache.ScriptFactory, "GetCurrentlyActiveFrameDocView", BindingFlags.NonPublic Or BindingFlags.Instance, New Object() {ServiceCache.VSMonitorSelection, False, Nothing})
@@ -257,10 +259,15 @@ Public Class Connect
 
 
         For Each Cmd2 In DirectCast(_applicationObject.Commands, Commands2)
-            If Cmd2.Name.Contains("SSMSTemplates") Then
+            If Cmd2.Name.Contains("SSMSTemplates") Or Cmd2.Name.Contains("SSMSRefreshTemplates") Then
                 Cmd2.Delete()
             End If
         Next
+        If Not (myTemporaryPopup Is Nothing) Then
+            myTemporaryPopup.Delete()
+        End If
+
+        '**************************************************************************
 
         Dim Folder = "C:\Users\abochkov\Source\Repos\ssms-addin\SSMS_Tool\QueryTemplates"
         Dim i = 1
@@ -271,6 +278,20 @@ Public Class Connect
         myTemporaryPopup.BeginGroup = False
         myTemporaryPopup.CommandBar.Name = "Templates"
         myTemporaryPopup.Visible = True
+
+
+        '***********************************************************
+
+        Dim cmd As Command = _applicationObject.Commands.AddNamedCommand(_addInInstance, "SSMSRefreshTemplates", "SSMSRefreshTemplates", "", True, ,
+                                                                 Nothing, vsCommandStatus.vsCommandStatusSupported Or vsCommandStatus.vsCommandStatusEnabled)
+
+        Dim myToolBarButton = DirectCast(cmd.AddControl(myTemporaryPopup.CommandBar, myTemporaryPopup.CommandBar.Controls.Count + 1), CommandBarButton)
+
+        myToolBarButton.Caption = "Refresh templates list"
+        myToolBarButton.Style = MsoButtonStyle.msoButtonIconAndCaption ' It could be also msoButtonIcon
+
+
+        '***********************************************************
 
         CreateCommandsInRecursion(myTemporaryPopup.CommandBar, Folder, i)
 
