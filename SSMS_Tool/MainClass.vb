@@ -15,6 +15,8 @@ Imports System.IO
 Imports DocumentFormat.OpenXml
 Imports DocumentFormat.OpenXml.Spreadsheet
 Imports System.Windows.Forms
+Imports OfficeOpenXml
+Imports OfficeOpenXml.Style
 
 Public Class Connect
 
@@ -25,6 +27,8 @@ Public Class Connect
     Private _addInInstance As AddIn
     Dim myTemporaryToolbar As CommandBar
     Dim myTemporaryPopup As CommandBarPopup
+
+    Private toolWindow As Window
 
     Private QueryExecuteEvent As CommandEvents
 
@@ -56,28 +60,28 @@ Public Class Connect
         'AddHandler QueryExecuteEvent.AfterExecute, AddressOf OnAfterQueryExecuted
 
         If connectMode = ext_ConnectMode.ext_cm_UISetup Then
-            Dim contextGUIDS As Object() = New Object() {}
-            Dim commands As Commands2 = DirectCast(_applicationObject.Commands, Commands2)
-            Dim toolsMenuName As String = "Tools"
-            Dim menuBarCommandBar As CommandBar = (DirectCast(_applicationObject.CommandBars, Microsoft.VisualStudio.CommandBars.CommandBars))("MenuBar")
-            Dim toolsControl As CommandBarControl = menuBarCommandBar.Controls(toolsMenuName)
-            Dim toolsPopup As CommandBarPopup = DirectCast(toolsControl, CommandBarPopup)
-            Try
+            'Dim contextGUIDS As Object() = New Object() {}
+            'Dim commands As Commands2 = DirectCast(_applicationObject.Commands, Commands2)
+            'Dim toolsMenuName As String = "Tools"
+            'Dim menuBarCommandBar As CommandBar = (DirectCast(_applicationObject.CommandBars, Microsoft.VisualStudio.CommandBars.CommandBars))("MenuBar")
+            'Dim toolsControl As CommandBarControl = menuBarCommandBar.Controls(toolsMenuName)
+            'Dim toolsPopup As CommandBarPopup = DirectCast(toolsControl, CommandBarPopup)
+            'Try
 
-                For Each Cmd As Command In commands
-                    If Cmd.Name.Contains("SSMSAddin") Then
-                        Cmd.Delete()
-                    End If
-                Next
+            '    For Each Cmd As Command In commands
+            '        If Cmd.Name.Contains("SSMSAddin") Then
+            '            Cmd.Delete()
+            '        End If
+            '    Next
 
-                Dim command As Command = commands.AddNamedCommand2(_addInInstance, "SSMSAddin", "SSMSAddin", "Executes the command for SSMSAddin", True, 59,
-                    contextGUIDS, DirectCast(vsCommandStatus.vsCommandStatusSupported, Integer) + DirectCast(vsCommandStatus.vsCommandStatusEnabled, Integer), DirectCast(vsCommandStyle.vsCommandStylePictAndText, Integer), vsCommandControlType.vsCommandControlTypeButton)
-                If (Not command Is Nothing) AndAlso (Not toolsPopup Is Nothing) Then
-                    command.AddControl(toolsPopup.CommandBar, 1)
-                End If
-            Catch generatedExceptionName As System.ArgumentException
-                MsgBox(generatedExceptionName.Message)
-            End Try
+            '    Dim command As Command = commands.AddNamedCommand2(_addInInstance, "SSMSAddin", "SSMSAddin", "Executes the command for SSMSAddin", True, 59,
+            '        contextGUIDS, DirectCast(vsCommandStatus.vsCommandStatusSupported, Integer) + DirectCast(vsCommandStatus.vsCommandStatusEnabled, Integer), DirectCast(vsCommandStyle.vsCommandStylePictAndText, Integer), vsCommandControlType.vsCommandControlTypeButton)
+            '    If (Not command Is Nothing) AndAlso (Not toolsPopup Is Nothing) Then
+            '        command.AddControl(toolsPopup.CommandBar, 1)
+            '    End If
+            'Catch generatedExceptionName As System.ArgumentException
+            '    MsgBox(generatedExceptionName.Message)
+            'End Try
 
         ElseIf connectMode = ext_ConnectMode.ext_cm_Startup Then
 
@@ -132,6 +136,14 @@ Public Class Connect
 
                 RecreateTemplates()
 
+            ElseIf commandName.Contains("SSMSSettingForm") Then
+
+                Dim guidString As String = "{9FFC9D9B-1F39-4763-A2AF-66AED06C711E}"
+                Dim windows2 As Windows2 = DirectCast(_applicationObject.Windows, Windows2)
+                Dim asm As Reflection.Assembly = Assembly.GetExecutingAssembly()
+                toolWindow = windows2.CreateToolWindow2(_addInInstance, asm.Location, "SSMSTool.SettingForm", "Addin setting", guidString, Nothing)
+                toolWindow.Visible = True
+
             ElseIf commandName.Contains("SSMSTemplates") Then
 
                 Dim document As Document = (DirectCast(ServiceCache.ExtensibilityModel, DTE2)).ActiveDocument
@@ -147,7 +159,7 @@ Public Class Connect
                     Dim ep As EditPoint = txt.Selection.ActivePoint.CreateEditPoint
 
                     'get a start point
-                    Dim sp As EditPoint = txt.Selection.ActivePoint.CreateEditPoint
+                    'Dim sp As EditPoint = txt.Selection.ActivePoint.CreateEditPoint
 
                     ''open the undo context
                     'Dim isOpen As Boolean = Application.UndoContext.IsOpen
@@ -170,83 +182,146 @@ Public Class Connect
 
 
 
-            ElseIf commandName = "SSMSTool.Connect.SSMSAddin" Then
-                Dim document As Document = (DirectCast(ServiceCache.ExtensibilityModel, DTE2)).ActiveDocument
+            ElseIf commandName.Contains("SSMSExportToExcel") Then
 
+                SaveCurrentGridToExcel()
 
-                    'Dim sqlScriptEditorControl As Object = InvokeMethod(ServiceCache.ScriptFactory, "GetCurrentlyActiveFrameDocView", BindingFlags.NonPublic Or BindingFlags.Instance, New Object() {ServiceCache.VSMonitorSelection, False, Nothing})
-                    ' m_SQLResultsControl = GetField(sqlScriptEditorControl, "m_sqlResultsControl", BindingFlags.NonPublic Or BindingFlags.Instance)
+                handled = True
+                Return
 
-                    Dim objType = ServiceCache.ScriptFactory.GetType()
-                    Dim method1 = objType.GetMethod("GetCurrentlyActiveFrameDocView", BindingFlags.NonPublic Or BindingFlags.Instance)
-                    Dim Result = method1.Invoke(ServiceCache.ScriptFactory, New Object() {ServiceCache.VSMonitorSelection, False, Nothing})
+            ElseIf commandName.Contains("SSMSFormatSelection") Then
 
-                    Dim objType2 = Result.GetType()
-                    Dim field = objType2.GetField("m_sqlResultsControl", BindingFlags.NonPublic Or BindingFlags.Instance)
-                    Dim SQLResultsControl = field.GetValue(Result)
+                FormatSelection()
 
-                    'Dim gridContainers As CollectionBase = GetNonPublicField(gridResultsPage, "m_gridContainers")
+                handled = True
+                Return
 
-                    'Dim ienum As IEnumerator = gridContainers.GetEnumerator()
-                    'ienum.MoveNext()
-
-                    'Dim gridResultGrid As Object = GetNonPublicField(ienum.Current, "m_grid")
-                    ''Return gridResultGrid As IGridControl;
-                    'Dim gs As Object = gridResultGrid.GridStorage
-                    'Dim Text = gs.GetCellDataAsString(0, 1)
-
-                    Dim objType3 = SQLResultsControl.GetType()
-                    Dim field2 = objType3.GetField("m_batchConsumer", BindingFlags.NonPublic Or BindingFlags.Instance)
-                    Dim batchConsumer = field2.GetValue(SQLResultsControl)
-
-                    Dim objType4 = batchConsumer.GetType()
-                    Dim field3 = objType4.GetField("m_gridContainer", BindingFlags.NonPublic Or BindingFlags.Instance)
-                    Dim gridResultsPage = field3.GetValue(batchConsumer)
-
-                    Dim Grid = GetNonPublicField(gridResultsPage, "m_grid")
-
-                    Dim GridStorage = Grid.GridStorage
-                    'Grid.BackColor = Drawing.Color.Red
-
-                    'Dim Text = GridStorage.GetCellDataAsString(0, 1)
-
-                    Dim Str = ""
-
-                    'Dim iRow = GridStorage.TotalNumberOfRows - 1
-                    'Dim iCol = GridStorage.TotalNumberOfColumns - 1
-
-                    'thanks - http://www.tsingfun.com/index.php?m=wap&siteid=1&c=index&a=show&catid=37&typeid=0&id=478&page=3&remains=true
-
-                    For iRow = 0 To GridStorage.TotalNumberOfRows - 1
-                        For iCol = 1 To GridStorage.TotalNumberOfColumns - 1
-                            Str = Str + GridStorage.GetCellDataAsString(iRow, iCol)
-                        Next
-                        Str = Str + vbNewLine
-                    Next
-
-
-                    Try
-
-                        ExportDataSet(GridStorage)
-
-                        MsgBox("File saved and copied to clipboard!")
-
-                    Catch ex As Exception
-                        MsgBox(ex.Message)
-                    End Try
-
-
-
-
-
-                    'If Not document Is Nothing Then
-                    '    Dim selection As TextSelection = DirectCast(document.Selection, TextSelection)
-                    '    selection.Insert("Welcome to SSMS! This sample is brought to you by SSMSBoost add-in team.", DirectCast(vsInsertFlags.vsInsertFlagsContainNewText, Int32))
-                    'End If
-                    handled = True
-                    Return
-                End If
             End If
+        End If
+
+    End Sub
+
+    Sub FormatSelection()
+
+
+        Dim document As Document = (DirectCast(ServiceCache.ExtensibilityModel, DTE2)).ActiveDocument
+
+
+        Dim txt As TextDocument = CType(document.Object("TextDocument"), TextDocument)
+
+        'get an edit point
+        Dim ep As EditPoint = txt.Selection.ActivePoint.CreateEditPoint
+
+        'get a start point
+        Dim sp As EditPoint = txt.Selection.ActivePoint.CreateEditPoint
+
+        ''open the undo context
+        'Dim isOpen As Boolean = Application.UndoContext.IsOpen
+        'If Not isOpen Then Application.UndoContext.Open("SmartPaster", False)
+
+        'clear the selection
+        Dim OldStr = txt.Selection.Text
+        If Not txt.Selection.IsEmpty Then
+            txt.Selection.Delete()
+        End If
+
+        'insert the text
+        'ep.Insert("TEST")
+        ep.Insert(OldStr)
+
+        'smart format
+        'If Configuration.AutoFormatAfterPaste Then
+        sp.SmartFormat(ep)
+        'End If
+
+
+
+
+
+
+
+    End Sub
+
+    Sub SaveCurrentGridToExcel()
+
+        Try
+
+            Dim document As Document = (DirectCast(ServiceCache.ExtensibilityModel, DTE2)).ActiveDocument
+
+
+            'Dim sqlScriptEditorControl As Object = InvokeMethod(ServiceCache.ScriptFactory, "GetCurrentlyActiveFrameDocView", BindingFlags.NonPublic Or BindingFlags.Instance, New Object() {ServiceCache.VSMonitorSelection, False, Nothing})
+            ' m_SQLResultsControl = GetField(sqlScriptEditorControl, "m_sqlResultsControl", BindingFlags.NonPublic Or BindingFlags.Instance)
+
+            Dim objType = ServiceCache.ScriptFactory.GetType()
+            Dim method1 = objType.GetMethod("GetCurrentlyActiveFrameDocView", BindingFlags.NonPublic Or BindingFlags.Instance)
+            Dim Result = method1.Invoke(ServiceCache.ScriptFactory, New Object() {ServiceCache.VSMonitorSelection, False, Nothing})
+
+            Dim objType2 = Result.GetType()
+            Dim field = objType2.GetField("m_sqlResultsControl", BindingFlags.NonPublic Or BindingFlags.Instance)
+            Dim SQLResultsControl = field.GetValue(Result)
+
+            Dim m_gridResultsPage = GetNonPublicField(SQLResultsControl, "m_gridResultsPage")
+            Dim gridContainers As CollectionBase = GetNonPublicField(m_gridResultsPage, "m_gridContainers")
+
+
+            Dim Folder As String = SettingManager.GetExcelExportFolder()
+            Dim FileName = Now.ToString("yyyy-MM-dd_HH-mm")
+            Dim FullFilename = Path.Combine(Folder, "QueryResult_" + FileName + ".xlsx")
+            If My.Computer.FileSystem.FileExists(FullFilename) Then
+                FullFilename = Path.Combine(Folder, "QueryResult_" + FileName + "_" + Guid.NewGuid.ToString + ".xlsx")
+            End If
+
+            Dim i = 0
+
+            For Each GridContainer In gridContainers
+
+                i = i + 1
+
+                Dim Grid = GetNonPublicField(GridContainer, "m_grid")
+                Dim GridStorage = Grid.GridStorage
+                Dim SchemaTable = GetNonPublicField(GridStorage, "m_schemaTable")
+
+                ExportDataSet(FullFilename, GridStorage, SchemaTable, i)
+
+            Next
+
+            Dim d As New DataObject(DataFormats.Text, FullFilename)
+            Clipboard.SetDataObject(d, True)
+
+            MsgBox("File saved to: " + FullFilename + vbNewLine + "Filename copied to clipboard.")
+
+        Catch ex As Exception
+
+            MsgBox(ex.Message)
+
+        End Try
+        'Dim objType3 = SQLResultsControl.GetType()
+        'Dim field2 = objType3.GetField("m_batchConsumer", BindingFlags.NonPublic Or BindingFlags.Instance)
+        'Dim batchConsumer = field2.GetValue(SQLResultsControl)
+
+        'Dim objType4 = batchConsumer.GetType()
+        'Dim field3 = objType4.GetField("m_gridContainer", BindingFlags.NonPublic Or BindingFlags.Instance)
+        'Dim gridResultsPage = field3.GetValue(batchConsumer)
+
+        'Dim Grid = GetNonPublicField(gridResultsPage, "m_grid")
+
+        'Dim GridStorage = Grid.GridStorage
+
+        'Dim SchemaTable = GetNonPublicField(GridStorage, "m_schemaTable")
+
+
+        ''thanks - http://www.tsingfun.com/index.php?m=wap&siteid=1&c=index&a=show&catid=37&typeid=0&id=478&page=3&remains=true
+
+        'Try
+
+        '    Dim Filename = ExportDataSet(GridStorage, SchemaTable)
+
+        '    MsgBox("File saved to: " + Filename + vbNewLine + "Filename copied to clipboard.")
+
+        'Catch ex As Exception
+        '    MsgBox(ex.Message)
+        'End Try
+
 
     End Sub
 
@@ -259,7 +334,12 @@ Public Class Connect
 
 
         For Each Cmd2 In DirectCast(_applicationObject.Commands, Commands2)
-            If Cmd2.Name.Contains("SSMSTemplates") Or Cmd2.Name.Contains("SSMSRefreshTemplates") Then
+            If Cmd2.Name.Contains("SSMSTemplates") _
+                Or Cmd2.Name.Contains("SSMSRefreshTemplates") _
+                Or Cmd2.Name.Contains("SSMSSettingForm") _
+                Or Cmd2.Name.Contains("SSMSExportToExcel") _
+                Or Cmd2.Name.Contains("SSMSFormatSelection") _
+                Then
                 Cmd2.Delete()
             End If
         Next
@@ -269,7 +349,8 @@ Public Class Connect
 
         '**************************************************************************
 
-        Dim Folder = "C:\Users\abochkov\Source\Repos\ssms-addin\SSMS_Tool\QueryTemplates"
+        Dim Folder = SettingManager.GetTemplatesFolder()
+
         Dim i = 1
 
         myTemporaryPopup = myTemporaryToolbar.Controls.Add(MsoControlType.msoControlPopup, System.Type.Missing, System.Type.Missing, System.Type.Missing, True)
@@ -290,10 +371,47 @@ Public Class Connect
         myToolBarButton.Caption = "Refresh templates list"
         myToolBarButton.Style = MsoButtonStyle.msoButtonIconAndCaption ' It could be also msoButtonIcon
 
+        '***********************************************************
+
+        Dim cmd3 As Command = _applicationObject.Commands.AddNamedCommand(_addInInstance, "SSMSSettingForm", "SSMSSettingForm", "", True, ,
+                                                                 Nothing, vsCommandStatus.vsCommandStatusSupported Or vsCommandStatus.vsCommandStatusEnabled)
+
+        Dim myToolBarButton2 = DirectCast(cmd3.AddControl(myTemporaryPopup.CommandBar, myTemporaryPopup.CommandBar.Controls.Count + 1), CommandBarButton)
+
+        myToolBarButton2.Caption = "Addin Setting"
+        myToolBarButton2.Style = MsoButtonStyle.msoButtonIconAndCaption
 
         '***********************************************************
 
-        CreateCommandsInRecursion(myTemporaryPopup.CommandBar, Folder, i)
+        Dim cmd4 As Command = _applicationObject.Commands.AddNamedCommand(_addInInstance, "SSMSExportToExcel", "SSMSExportToExcel", "", True, ,
+                                                                 Nothing, vsCommandStatus.vsCommandStatusSupported Or vsCommandStatus.vsCommandStatusEnabled)
+
+        Dim myToolBarButton4 = DirectCast(cmd4.AddControl(myTemporaryPopup.CommandBar, myTemporaryPopup.CommandBar.Controls.Count + 1), CommandBarButton)
+
+        myToolBarButton4.Caption = "Export current grids to Excel"
+        myToolBarButton4.Style = MsoButtonStyle.msoButtonIconAndCaption
+
+        '***********************************************************
+
+        Dim cmd5 As Command = _applicationObject.Commands.AddNamedCommand(_addInInstance, "SSMSFormatSelection", "SSMSFormatSelection", "", True, ,
+                                                                 Nothing, vsCommandStatus.vsCommandStatusSupported Or vsCommandStatus.vsCommandStatusEnabled)
+
+        Dim myToolBarButton5 = DirectCast(cmd5.AddControl(myTemporaryPopup.CommandBar, myTemporaryPopup.CommandBar.Controls.Count + 1), CommandBarButton)
+
+        myToolBarButton5.Caption = "Format selected document"
+        myToolBarButton5.Style = MsoButtonStyle.msoButtonIconAndCaption
+
+        '***********************************************************
+
+        If Not String.IsNullOrEmpty(Folder) Then
+            Try
+                CreateCommandsInRecursion(myTemporaryPopup.CommandBar, Folder, i)
+            Catch ex As Exception
+                MsgBox("Error while loading script templates (SSMS Addin): " + ex.Message)
+            End Try
+
+        End If
+
 
 
 
@@ -350,8 +468,71 @@ Public Class Connect
 
     End Sub
 
+    Private Function ExportDataSet(FullFilename As String, ds As Object, SchemaTable As Object, QueryNumber As Integer) As String
 
-    Private Sub ExportDataSet(ds As Object)
+        Dim newFile As New FileInfo(FullFilename)
+        'If newFile.Exists Then
+        'newFile.Open(FileMode.Append, FileAccess.Write)
+        '    newFile = New FileInfo(FullFilename)
+        'End If
+
+        Using package As New ExcelPackage(newFile)
+            Dim worksheet As ExcelWorksheet = package.Workbook.Worksheets.Add("Query_" + QueryNumber.ToString)
+
+            Dim ColumnTypes = New Hashtable
+            Dim kk = 0
+
+            For Each Column In SchemaTable.Rows
+
+                kk = kk + 1
+
+                Dim TypeStr = Column(12).ToString
+                Dim ColumnName = IIf(String.IsNullOrEmpty(Column(0).ToString), "(no column name)", Column(0).ToString)
+
+                ColumnTypes.Add(kk, TypeStr)
+
+                worksheet.Cells(1, kk).Value = ColumnName
+
+            Next
+
+            Using range = worksheet.Cells(1, 1, 1, kk)
+                range.Style.Font.Bold = True
+                range.Style.Fill.PatternType = ExcelFillStyle.Solid
+                range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.DarkBlue)
+                range.Style.Font.Color.SetColor(System.Drawing.Color.White)
+            End Using
+
+
+            For iRow = 0 To ds.TotalNumberOfRows - 1
+                For iCol = 1 To ds.TotalNumberOfColumns - 1
+
+                    Dim Val = ds.GetCellData(iRow, iCol)
+
+                    If Val Is Nothing Then
+                        worksheet.Cells(iRow + 2, iCol).Value = ds.GetCellDataAsString(iRow, iCol)
+                    Else
+                        worksheet.Cells(iRow + 2, iCol).Value = Val.Value
+                        If TypeOf (Val.value) Is Date Then
+                            worksheet.Cells(iRow + 2, iCol).Style.Numberformat.Format = "yyyy-MM-dd HH:mm:ss"
+                        End If
+                    End If
+
+                Next
+            Next
+
+            worksheet.Cells.AutoFitColumns(0)
+
+            package.Save()
+
+        End Using
+
+
+
+
+    End Function
+
+
+    Private Function ExportDataSet_old(ds As Object, SchemaTable As Object) As String
 
         Dim mem As MemoryStream = New MemoryStream()
 
@@ -382,30 +563,71 @@ Public Class Connect
 
             Dim headerRow As New DocumentFormat.OpenXml.Spreadsheet.Row()
 
-            Dim columns As List(Of [String]) = New List(Of String)()
-            For i = 1 To ds.TotalNumberOfColumns - 1
+            'Dim columns As List(Of [String]) = New List(Of String)()
 
-                columns.Add("Column_" + i.ToString)
+            Dim ColumnTypes = New Hashtable
+            Dim kk = 1
+
+            For Each Column In SchemaTable.Rows
 
                 Dim cell As New DocumentFormat.OpenXml.Spreadsheet.Cell()
+
+                Dim TypeStr = Column(12).ToString
+                Dim ColumnName = Column(0).ToString
+
+                ColumnTypes.Add(kk, TypeStr)
+
                 cell.DataType = DocumentFormat.OpenXml.Spreadsheet.CellValues.[String]
-                cell.CellValue = New DocumentFormat.OpenXml.Spreadsheet.CellValue("Column_" + i.ToString)
+                cell.CellValue = New DocumentFormat.OpenXml.Spreadsheet.CellValue(IIf(String.IsNullOrEmpty(ColumnName), "(no column name)", ColumnName))
+
                 headerRow.AppendChild(cell)
 
+                kk = kk + 1
             Next
+
+            'For Each Column In ds.ColumnNames
+
+
+            'Next
+
+            'For i = 1 To ds.TotalNumberOfColumns - 1
+
+            '    columns.Add("Column_" + i.ToString)
+
+            '    Dim cell As New DocumentFormat.OpenXml.Spreadsheet.Cell()
+            '    cell.DataType = DocumentFormat.OpenXml.Spreadsheet.CellValues.[String]
+            '    cell.CellValue = New DocumentFormat.OpenXml.Spreadsheet.CellValue("Column_" + i.ToString)
+            '    headerRow.AppendChild(cell)
+
+            'Next
             sheetData.AppendChild(headerRow)
 
             For iRow = 0 To ds.TotalNumberOfRows - 1
 
                 Dim newRow As New DocumentFormat.OpenXml.Spreadsheet.Row()
                 For iCol = 1 To ds.TotalNumberOfColumns - 1
+
                     Dim Val = ds.GetCellDataAsString(iRow, iCol)
 
                     Dim cell As New DocumentFormat.OpenXml.Spreadsheet.Cell()
-                    cell.DataType = DocumentFormat.OpenXml.Spreadsheet.CellValues.[String]
+
+                    Dim ColumnType = ColumnTypes.Item(iCol)
+
+                    If ColumnType = "System.Decimal" Or ColumnType = "System.Int32" Then
+                        cell.DataType = DocumentFormat.OpenXml.Spreadsheet.CellValues.Number
+                    ElseIf ColumnType = "System.DateTime" Then
+                        cell.DataType = DocumentFormat.OpenXml.Spreadsheet.CellValues.Date
+                        'ElseIf ColumnType = "System.Decimal" Then
+                        '    cell.DataType = DocumentFormat.OpenXml.Spreadsheet.CellValues.Number
+                    Else
+                        cell.DataType = DocumentFormat.OpenXml.Spreadsheet.CellValues.[String]
+                    End If
+
+
                     cell.CellValue = New DocumentFormat.OpenXml.Spreadsheet.CellValue(Val)
-                    '
+
                     newRow.AppendChild(cell)
+
                 Next
                 sheetData.AppendChild(newRow)
             Next
@@ -413,15 +635,20 @@ Public Class Connect
             'Next
         End Using
 
-        Dim f As String = "C:\temp\excel_export.xlsx"
+        Dim Folder As String = SettingManager.GetExcelExportFolder()
 
-        My.Computer.FileSystem.WriteAllBytes(f, mem.ToArray, False)
+        Dim FileName = Now.ToString("yyyy-MM-dd_HH-mm")
 
+        Dim FullFilename = Path.Combine(Folder, "QueryResult_" + FileName + ".xlsx")
 
-        'Dim d As New DataObject(DataFormats.FileDrop, f)
-        'Clipboard.SetDataObject(d, True)
+        My.Computer.FileSystem.WriteAllBytes(FullFilename, mem.ToArray, False)
 
-    End Sub
+        Dim d As New DataObject(DataFormats.Text, FullFilename)
+        Clipboard.SetDataObject(d, True)
+
+        Return FullFilename
+
+    End Function
 
 
 
