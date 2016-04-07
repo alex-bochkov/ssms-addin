@@ -17,6 +17,7 @@ Imports DocumentFormat.OpenXml.Spreadsheet
 Imports System.Windows.Forms
 Imports OfficeOpenXml
 Imports OfficeOpenXml.Style
+Imports Microsoft.SqlServer.TransactSql.ScriptDom
 
 Public Class Connect
 
@@ -158,25 +159,10 @@ Public Class Connect
                     'get an edit point
                     Dim ep As EditPoint = txt.Selection.ActivePoint.CreateEditPoint
 
-                    'get a start point
-                    'Dim sp As EditPoint = txt.Selection.ActivePoint.CreateEditPoint
-
-                    ''open the undo context
-                    'Dim isOpen As Boolean = Application.UndoContext.IsOpen
-                    'If Not isOpen Then Application.UndoContext.Open("SmartPaster", False)
-
                     'clear the selection
                     If Not txt.Selection.IsEmpty Then txt.Selection.Delete()
 
-                    'insert the text
-                    'ep.Insert(Indent(text, ep.LineCharOffset))
                     ep.Insert(Text)
-
-                    'smart format
-                    'If Configuration.AutoFormatAfterPaste Then
-                    'sp.SmartFormat(ep)
-                    'End If
-
 
                 End If
 
@@ -203,36 +189,44 @@ Public Class Connect
 
     Sub FormatSelection()
 
+        Try
 
-        Dim document As Document = (DirectCast(ServiceCache.ExtensibilityModel, DTE2)).ActiveDocument
+            Dim document As Document = (DirectCast(ServiceCache.ExtensibilityModel, DTE2)).ActiveDocument
 
 
-        Dim txt As TextDocument = CType(document.Object("TextDocument"), TextDocument)
+            Dim txt As TextDocument = CType(document.Object("TextDocument"), TextDocument)
 
-        'get an edit point
-        Dim ep As EditPoint = txt.Selection.ActivePoint.CreateEditPoint
+            'get an edit point
+            Dim ep As EditPoint = txt.Selection.ActivePoint.CreateEditPoint
 
-        'get a start point
-        Dim sp As EditPoint = txt.Selection.ActivePoint.CreateEditPoint
+            'clear the selection
+            Dim OldStr = txt.Selection.Text
 
-        ''open the undo context
-        'Dim isOpen As Boolean = Application.UndoContext.IsOpen
-        'If Not isOpen Then Application.UndoContext.Open("SmartPaster", False)
+            Dim SqlParser = New TSql90Parser(False)
 
-        'clear the selection
-        Dim OldStr = txt.Selection.Text
-        If Not txt.Selection.IsEmpty Then
-            txt.Selection.Delete()
-        End If
+            Dim parseErrors As IList(Of ParseError) = New List(Of ParseError)
+            Dim result As TSqlFragment = SqlParser.Parse(New StringReader(OldStr), parseErrors)
 
-        'insert the text
-        'ep.Insert("TEST")
-        ep.Insert(OldStr)
+            If parseErrors.Count > 0 Then
+                Throw New System.Exception("TSql90Parser unable format selected T-SQL due to an error in syntax..")
+            End If
 
-        'smart format
-        'If Configuration.AutoFormatAfterPaste Then
-        sp.SmartFormat(ep)
-        'End If
+            If Not txt.Selection.IsEmpty Then
+                txt.Selection.Delete()
+            End If
+
+            Dim StrAdd2 = ""
+            Dim Gen = New Sql90ScriptGenerator
+            Gen.Options.IncludeSemicolons = False
+            Gen.Options.AlignClauseBodies = False
+            Gen.GenerateScript(result, StrAdd2)
+
+            ep.Insert(StrAdd2)
+
+
+        Catch ex As Exception
+            MsgBox(ex.Message)
+        End Try
 
 
 
@@ -360,30 +354,33 @@ Public Class Connect
         myTemporaryPopup.CommandBar.Name = "Templates"
         myTemporaryPopup.Visible = True
 
-
+        'Dim Delim = myTemporaryToolbar.Controls.Add(MsoControlType.msoControlSplitDropdown, System.Type.Missing, System.Type.Missing, System.Type.Missing, True)
+        'Delim.
         '***********************************************************
-
-        Dim cmd As Command = _applicationObject.Commands.AddNamedCommand(_addInInstance, "SSMSRefreshTemplates", "SSMSRefreshTemplates", "", True, ,
+        'icon list
+        'http://www.kebabshopblues.co.uk/2007/01/04/visual-studio-2005-tools-for-office-commandbarbutton-faceid-property/
+        Dim cmd As Command = _applicationObject.Commands.AddNamedCommand(_addInInstance, "SSMSRefreshTemplates", "SSMSRefreshTemplates", "", True, 37,
                                                                  Nothing, vsCommandStatus.vsCommandStatusSupported Or vsCommandStatus.vsCommandStatusEnabled)
 
         Dim myToolBarButton = DirectCast(cmd.AddControl(myTemporaryPopup.CommandBar, myTemporaryPopup.CommandBar.Controls.Count + 1), CommandBarButton)
 
         myToolBarButton.Caption = "Refresh templates list"
         myToolBarButton.Style = MsoButtonStyle.msoButtonIconAndCaption ' It could be also msoButtonIcon
+        myToolBarButton.BeginGroup = True
 
         '***********************************************************
 
-        Dim cmd3 As Command = _applicationObject.Commands.AddNamedCommand(_addInInstance, "SSMSSettingForm", "SSMSSettingForm", "", True, ,
+        Dim cmd3 As Command = _applicationObject.Commands.AddNamedCommand(_addInInstance, "SSMSSettingForm", "SSMSSettingForm", "", True, 2946,
                                                                  Nothing, vsCommandStatus.vsCommandStatusSupported Or vsCommandStatus.vsCommandStatusEnabled)
 
         Dim myToolBarButton2 = DirectCast(cmd3.AddControl(myTemporaryPopup.CommandBar, myTemporaryPopup.CommandBar.Controls.Count + 1), CommandBarButton)
 
         myToolBarButton2.Caption = "Addin Setting"
         myToolBarButton2.Style = MsoButtonStyle.msoButtonIconAndCaption
-
+        myToolBarButton2.BeginGroup = True
         '***********************************************************
 
-        Dim cmd4 As Command = _applicationObject.Commands.AddNamedCommand(_addInInstance, "SSMSExportToExcel", "SSMSExportToExcel", "", True, ,
+        Dim cmd4 As Command = _applicationObject.Commands.AddNamedCommand(_addInInstance, "SSMSExportToExcel", "SSMSExportToExcel", "", True, 263,
                                                                  Nothing, vsCommandStatus.vsCommandStatusSupported Or vsCommandStatus.vsCommandStatusEnabled)
 
         Dim myToolBarButton4 = DirectCast(cmd4.AddControl(myTemporaryPopup.CommandBar, myTemporaryPopup.CommandBar.Controls.Count + 1), CommandBarButton)
@@ -393,7 +390,7 @@ Public Class Connect
 
         '***********************************************************
 
-        Dim cmd5 As Command = _applicationObject.Commands.AddNamedCommand(_addInInstance, "SSMSFormatSelection", "SSMSFormatSelection", "", True, ,
+        Dim cmd5 As Command = _applicationObject.Commands.AddNamedCommand(_addInInstance, "SSMSFormatSelection", "SSMSFormatSelection", "", True, 108,
                                                                  Nothing, vsCommandStatus.vsCommandStatusSupported Or vsCommandStatus.vsCommandStatusEnabled)
 
         Dim myToolBarButton5 = DirectCast(cmd5.AddControl(myTemporaryPopup.CommandBar, myTemporaryPopup.CommandBar.Controls.Count + 1), CommandBarButton)
@@ -448,7 +445,7 @@ Public Class Connect
 
             Dim FI = My.Computer.FileSystem.GetFileInfo(File)
 
-            Dim cmd As Command = _applicationObject.Commands.AddNamedCommand(_addInInstance, "SSMSTemplates_" + i.ToString, FI.Name, "", True, ,
+            Dim cmd As Command = _applicationObject.Commands.AddNamedCommand(_addInInstance, "SSMSTemplates_" + i.ToString, FI.Name, "", True, 2687,
                                                                  Nothing, vsCommandStatus.vsCommandStatusSupported Or vsCommandStatus.vsCommandStatusEnabled)
 
             Dim myToolBarButton = DirectCast(cmd.AddControl(Owner, Owner.Controls.Count + 1), CommandBarButton)
