@@ -614,6 +614,8 @@ Public Class Connect
                         cell.DataType = DocumentFormat.OpenXml.Spreadsheet.CellValues.Number
                     ElseIf ColumnType = "System.DateTime" Then
                         cell.DataType = DocumentFormat.OpenXml.Spreadsheet.CellValues.Date
+                    ElseIf ColumnType = "System.Boolean" Then
+                        cell.DataType = DocumentFormat.OpenXml.Spreadsheet.CellValues.Boolean
                         'ElseIf ColumnType = "System.Decimal" Then
                         '    cell.DataType = DocumentFormat.OpenXml.Spreadsheet.CellValues.Number
                     Else
