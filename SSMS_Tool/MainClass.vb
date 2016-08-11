@@ -508,10 +508,17 @@ Public Class Connect
                     If Val Is Nothing Then
                         worksheet.Cells(iRow + 2, iCol).Value = ds.GetCellDataAsString(iRow, iCol)
                     Else
-                        worksheet.Cells(iRow + 2, iCol).Value = Val.Value
-                        If TypeOf (Val.value) Is Date Then
-                            worksheet.Cells(iRow + 2, iCol).Style.Numberformat.Format = "yyyy-MM-dd HH:mm:ss"
+
+                        If TypeOf (Val) Is String Then
+                            worksheet.Cells(iRow + 2, iCol).Value = Val
+                        Else
+                            worksheet.Cells(iRow + 2, iCol).Value = Val.Value
+                            If TypeOf (Val.value) Is Date Then
+                                worksheet.Cells(iRow + 2, iCol).Style.Numberformat.Format = "yyyy-MM-dd HH:mm:ss"
+                            End If
                         End If
+
+
                     End If
 
                 Next
