@@ -161,13 +161,33 @@
     <Service Include="{94E38DFF-614B-4CBD-B67C-F211BB35CE8B}" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="QueryTemplates\Blocking\Current blocks - NEW.sql" />
     <Content Include="QueryTemplates\Blocking\Current blocks.sql" />
+    <Content Include="QueryTemplates\Blocking\Deadlocks from ExtendedEvents.sql" />
+    <Content Include="QueryTemplates\Blocking\Historical data for KEY and TABLE.sql" />
+    <Content Include="QueryTemplates\Blocking\Historical data.sql" />
+    <Content Include="QueryTemplates\Performance\Bufferpool_usage.sql" />
     <Content Include="QueryTemplates\Performance\Current running jobs.sql" />
+    <Content Include="QueryTemplates\Performance\Expensive queries.sql" />
+    <Content Include="QueryTemplates\Performance\File%27s autogrowth history.sql" />
+    <Content Include="QueryTemplates\Performance\index-fragmentation.sql" />
     <Content Include="QueryTemplates\Performance\Open transactions with query plans.sql" />
     <Content Include="QueryTemplates\Performance\Outdated statistics.sql" />
+    <Content Include="QueryTemplates\Performance\sp_BlitzCache.sql" />
+    <Content Include="QueryTemplates\Performance\sp_BlitzIndex.sql" />
+    <Content Include="QueryTemplates\Performance\TempDb Usage.sql" />
     <Content Include="QueryTemplates\Performance\The longest running Sprocs.sql" />
     <Content Include="QueryTemplates\Performance\Wait stats.sql" />
+    <Content Include="QueryTemplates\Performance\who_is_active_v11_17.sql" />
     <Content Include="QueryTemplates\Replication\Last restored log files SQL2005.sql" />
+    <Content Include="QueryTemplates\Replication\Last restored log files SQL2008.sql" />
+    <Content Include="QueryTemplates\sysprocesses.sql" />
+    <Content Include="QueryTemplates\_Shortcodes\Create Clustered Index.sql" />
+    <Content Include="QueryTemplates\_Shortcodes\DATE from DATETIME.sql" />
+    <Content Include="QueryTemplates\_Shortcodes\FS commands.sql" />
+    <Content Include="QueryTemplates\_Shortcodes\HTML email template.sql" />
+    <Content Include="QueryTemplates\_Shortcodes\If OBJECT_ID IS NULL.sql" />
+    <Content Include="QueryTemplates\_Shortcodes\set transaction isolation level read uncommitted.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -6,14 +6,11 @@ IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_NAME = 's
 GO
 
 /*********************************************************************************************
-Who Is Active? v11.11 (2012-03-22)
-(C) 2007-2012, Adam Machanic
+Who Is Active? v11.17 (2016-10-18)
+(C) 2007-2016, Adam Machanic
 
 Feedback: mailto:amachanic@gmail.com
-Updates: http://sqlblog.com/blogs/adam_machanic/archive/tags/who+is+active/default.aspx
-"Beta" Builds: http://sqlblog.com/files/folders/beta/tags/who+is+active/default.aspx
-
-Donate! Support this project: http://tinyurl.com/WhoIsActiveDonate
+Updates: http://whoisactive.com
 
 License: 
 	Who is Active? is free to download and use for personal, educational, and internal 
@@ -1442,9 +1439,9 @@ BEGIN;
 					CASE
 						WHEN x.page_no = 1 OR x.page_no % 8088 = 0 THEN 'PFS'
 						WHEN x.page_no = 2 OR x.page_no % 511232 = 0 THEN 'GAM'
-						WHEN x.page_no = 3 OR x.page_no % 511233 = 0 THEN 'SGAM'
-						WHEN x.page_no = 6 OR x.page_no % 511238 = 0 THEN 'DCM'
-						WHEN x.page_no = 7 OR x.page_no % 511239 = 0 THEN 'BCM'
+						WHEN x.page_no = 3 OR (x.page_no - 1) % 511232 = 0 THEN 'SGAM'
+						WHEN x.page_no = 6 OR (x.page_no - 6) % 511232 = 0 THEN 'DCM'
+						WHEN x.page_no = 7 OR (x.page_no - 7) % 511232 = 0 THEN 'BCM'
 						WHEN x.page_no IS NOT NULL THEN '*'
 						ELSE NULL
 					END AS page_type,
@@ -1642,9 +1639,9 @@ BEGIN;
 					CASE
 						WHEN x.page_no = 1 OR x.page_no % 8088 = 0 THEN 'PFS'
 						WHEN x.page_no = 2 OR x.page_no % 511232 = 0 THEN 'GAM'
-						WHEN x.page_no = 3 OR x.page_no % 511233 = 0 THEN 'SGAM'
-						WHEN x.page_no = 6 OR x.page_no % 511238 = 0 THEN 'DCM'
-						WHEN x.page_no = 7 OR x.page_no % 511239 = 0 THEN 'BCM'
+						WHEN x.page_no = 3 OR (x.page_no - 1) % 511232 = 0 THEN 'SGAM'
+						WHEN x.page_no = 6 OR (x.page_no - 6) % 511232 = 0 THEN 'DCM'
+						WHEN x.page_no = 7 OR (x.page_no - 7) % 511232 = 0 THEN 'BCM'
 						WHEN x.page_no IS NOT NULL THEN '*'
 						ELSE NULL
 					END,
@@ -1754,7 +1751,7 @@ BEGIN;
 
 			DECLARE @blockers TABLE
 			(
-				session_id INT NOT NULL PRIMARY KEY
+				session_id INT NOT NULL PRIMARY KEY WITH (IGNORE_DUP_KEY = ON)
 			);
 
 			BLOCKERS:;
@@ -2592,6 +2589,8 @@ BEGIN;
 										x.deadlock_priority,
 										x.row_count,
 										x.command_type, 
+										master.dbo.fn_varbintohexstr(x.sql_handle) AS sql_handle,
+										master.dbo.fn_varbintohexstr(x.plan_handle) AS plan_handle,
 										' +
 										CASE
 											WHEN @output_column_list LIKE '%|[program_name|]%' ESCAPE '|' THEN
@@ -2662,7 +2661,7 @@ BEGIN;
 				SELECT TOP(@i)
 					y.*,
 					CASE
-						WHEN DATEDIFF(day, y.start_time, GETDATE()) > 24 THEN
+						WHEN DATEDIFF(hour, y.start_time, GETDATE()) > 576 THEN
 							DATEDIFF(second, GETDATE(), y.start_time)
 						ELSE DATEDIFF(ms, y.start_time, GETDATE())
 					END AS elapsed_time,
@@ -2704,17 +2703,17 @@ BEGIN;
 																	N''GAM''
 														WHEN
 															CONVERT(INT, RIGHT(y.resource_description, CHARINDEX(N'':'', REVERSE(y.resource_description)) - 1)) = 3 OR
-															CONVERT(INT, RIGHT(y.resource_description, CHARINDEX(N'':'', REVERSE(y.resource_description)) - 1)) % 511233 = 0
+															(CONVERT(INT, RIGHT(y.resource_description, CHARINDEX(N'':'', REVERSE(y.resource_description)) - 1)) - 1) % 511232 = 0
 																THEN
 																	N''SGAM''
 														WHEN
 															CONVERT(INT, RIGHT(y.resource_description, CHARINDEX(N'':'', REVERSE(y.resource_description)) - 1)) = 6 OR
-															CONVERT(INT, RIGHT(y.resource_description, CHARINDEX(N'':'', REVERSE(y.resource_description)) - 1)) % 511238 = 0 
+															(CONVERT(INT, RIGHT(y.resource_description, CHARINDEX(N'':'', REVERSE(y.resource_description)) - 1)) - 6) % 511232 = 0 
 																THEN 
 																	N''DCM''
 														WHEN
 															CONVERT(INT, RIGHT(y.resource_description, CHARINDEX(N'':'', REVERSE(y.resource_description)) - 1)) = 7 OR
-															CONVERT(INT, RIGHT(y.resource_description, CHARINDEX(N'':'', REVERSE(y.resource_description)) - 1)) % 511239 = 0 
+															(CONVERT(INT, RIGHT(y.resource_description, CHARINDEX(N'':'', REVERSE(y.resource_description)) - 1)) - 7) % 511232 = 0 
 																THEN 
 																	N''BCM''
 														ELSE 
@@ -2866,7 +2865,7 @@ BEGIN;
 							OR
 							(
 								r.start_time = s.last_request_start_time
-								AND s.last_request_end_time = sp.last_request_end_time
+								AND s.last_request_end_time <= sp.last_request_end_time
 							)
 						)
 				) AS y
@@ -3112,17 +3111,17 @@ BEGIN;
 																						N''GAM''
 																			WHEN
 																				CONVERT(INT, RIGHT(wt.resource_description, CHARINDEX(N'':'', REVERSE(wt.resource_description)) - 1)) = 3 OR
-																				CONVERT(INT, RIGHT(wt.resource_description, CHARINDEX(N'':'', REVERSE(wt.resource_description)) - 1)) % 511233 = 0 
+																				(CONVERT(INT, RIGHT(wt.resource_description, CHARINDEX(N'':'', REVERSE(wt.resource_description)) - 1)) - 1) % 511232 = 0 
 																					THEN 
 																						N''SGAM''
 																			WHEN
 																				CONVERT(INT, RIGHT(wt.resource_description, CHARINDEX(N'':'', REVERSE(wt.resource_description)) - 1)) = 6 OR
-																				CONVERT(INT, RIGHT(wt.resource_description, CHARINDEX(N'':'', REVERSE(wt.resource_description)) - 1)) % 511238 = 0 
+																				(CONVERT(INT, RIGHT(wt.resource_description, CHARINDEX(N'':'', REVERSE(wt.resource_description)) - 1)) - 6) % 511232 = 0 
 																					THEN 
 																						N''DCM''
 																			WHEN
 																				CONVERT(INT, RIGHT(wt.resource_description, CHARINDEX(N'':'', REVERSE(wt.resource_description)) - 1)) = 7 OR
-																				CONVERT(INT, RIGHT(wt.resource_description, CHARINDEX(N'':'', REVERSE(wt.resource_description)) - 1)) % 511239 = 0
+																				(CONVERT(INT, RIGHT(wt.resource_description, CHARINDEX(N'':'', REVERSE(wt.resource_description)) - 1)) - 7) % 511232 = 0
 																					THEN 
 																						N''BCM''
 																			ELSE
@@ -4323,7 +4322,8 @@ BEGIN;
 			(
 				SELECT
 					session_id,
-					session_id AS top_level_session_id
+					session_id AS top_level_session_id,
+					CONVERT(VARCHAR(8000), '.' + CONVERT(VARCHAR(8000), session_id) + '.') AS the_path
 				FROM #sessions
 				WHERE
 					recursion = 1
@@ -4332,11 +4332,13 @@ BEGIN;
 
 				SELECT
 					s.session_id,
-					b.top_level_session_id
+					b.top_level_session_id,
+					CONVERT(VARCHAR(8000), b.the_path + CONVERT(VARCHAR(8000), s.session_id) + '.') AS the_path
 				FROM blockers AS b
 				JOIN #sessions AS s ON
 					s.blocking_session_id = b.session_id
 					AND s.recursion = 1
+					AND b.the_path NOT LIKE '%.' + CONVERT(VARCHAR(8000), s.session_id) + '.%' COLLATE Latin1_General_Bin2
 			)
 			UPDATE s
 			SET
