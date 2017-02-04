@@ -202,13 +202,13 @@ Public Class Connect
             'clear the selection
             Dim OldStr = txt.Selection.Text
 
-            Dim SqlParser = New TSql90Parser(False)
+            Dim SqlParser = New TSql120Parser(False)
 
             Dim parseErrors As IList(Of ParseError) = New List(Of ParseError)
             Dim result As TSqlFragment = SqlParser.Parse(New StringReader(OldStr), parseErrors)
 
             If parseErrors.Count > 0 Then
-                Throw New System.Exception("TSql90Parser unable format selected T-SQL due to an error in syntax..")
+                Throw New System.Exception("TSql120Parser unable format selected T-SQL due to an error in syntax..")
             End If
 
             If Not txt.Selection.IsEmpty Then
@@ -216,7 +216,7 @@ Public Class Connect
             End If
 
             Dim StrAdd2 = ""
-            Dim Gen = New Sql90ScriptGenerator
+            Dim Gen = New Sql120ScriptGenerator
             Gen.Options.IncludeSemicolons = False
             Gen.Options.AlignClauseBodies = False
             Gen.GenerateScript(result, StrAdd2)
