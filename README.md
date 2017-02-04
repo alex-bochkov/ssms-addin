@@ -1,11 +1,11 @@
-<h1>Simple addin for SQL Server Management Studio 2008-2014 that helps with:<h1>
+<h1>Simple addin for SQL Server Management Studio 2008-2014 that helps with:</h1>
 <ul>
   <li>Export current GRID to Excel files (without re-execution!)</li>
   <li>Format selected TSQL code with internal SQL Server parser</li>
   <li>Quick access to code templates</li>
 </ul>
 
-<h1>Installation:<h1>
+<h1>Installation:</h1>
 <ul>
   <li>Unpack files into any folder</li>
   <li>Modify SSMSTool.AddIn file - change path to SSMSTool.dll file</li>
