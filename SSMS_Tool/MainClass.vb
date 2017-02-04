@@ -208,7 +208,14 @@ Public Class Connect
             Dim result As TSqlFragment = SqlParser.Parse(New StringReader(OldStr), parseErrors)
 
             If parseErrors.Count > 0 Then
-                Throw New System.Exception("TSql120Parser unable format selected T-SQL due to an error in syntax..")
+
+                Dim ErrorStr = ""
+                For Each StrError In parseErrors
+                    ErrorStr = ErrorStr + vbNewLine + StrError.Message
+                Next
+
+                Throw New System.Exception("TSql120Parser unable format selected T-SQL due to a syntax error." + vbNewLine + ErrorStr)
+
             End If
 
             If Not txt.Selection.IsEmpty Then
