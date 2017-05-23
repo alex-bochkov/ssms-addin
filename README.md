@@ -10,6 +10,7 @@
   <li>Unpack files into any folder</li>
   <li>Modify SSMSTool.AddIn file - change path to SSMSTool.dll file</li>
   <li>Copy SSMSTool.AddIn file to <strong>C:\ProgramData\Application Data\Microsoft\MSEnvShared\Addins</strong> folder (create it if not exists)</li>
+  <li>If error 80131515 occures - add &ltloadFromRemoteSources enabled="true" /&gt into "C:\Program Files (x86)\Microsoft SQL Server\120\Tools\Binn\ManagementStudio\Ssms.exe.config" right after &ltruntime&gt</li>
 </ul>
 
 <img src="https://github.com/alekseybochkov/ssms-addin/blob/master/screenshot.png?raw=true"/>
