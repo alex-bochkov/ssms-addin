@@ -30,7 +30,16 @@ AS (SELECT NAME,
                                                                          AND i.object_id = T.object_id)) THEN 1 ELSE 0 END AS PKisClustered,
            is_replicated
     FROM sys.tables AS T
-    WHERE is_ms_shipped = 0)
+    WHERE is_ms_shipped = 0),
+ LastReadWrites
+AS (SELECT object_id AS ObjectID,
+           MAX(last_user_update) AS [LastUserUpdate],
+           MAX(last_user_seek) AS [LastUserSeek],
+           MAX(last_user_scan) AS [LastUserScan],
+           MAX(last_user_lookup) AS [LastUserLookup]
+    FROM sys.dm_db_index_usage_stats
+    WHERE database_id = DB_ID()
+    GROUP BY object_id)
 SELECT DB_NAME() AS DatabaseName,
        rs.SchemaName,
        rs.TableName,
@@ -38,8 +47,13 @@ SELECT DB_NAME() AS DatabaseName,
        TI.HasPK,
        TI.HasClusteredIndex,
        TI.PKisClustered,
-       TI.is_replicated
+       TI.is_replicated,
+       L.[LastUserUpdate] AS LastWrite,
+       COALESCE (L.LastUserScan, L.LastUserSeek, L.LastUserLookup) AS LastRead
 FROM RowsStatistics AS RS
      FULL OUTER JOIN
      TableInformation AS TI
-     ON RS.ObjectId = TI.ObjectId;
+     ON RS.ObjectId = TI.ObjectId
+     LEFT OUTER JOIN
+     LastReadWrites AS L
+     ON L.objectId = RS.ObjectId;
