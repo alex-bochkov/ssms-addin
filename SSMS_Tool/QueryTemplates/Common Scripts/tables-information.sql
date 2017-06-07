@@ -31,7 +31,9 @@ AS (SELECT NAME,
            is_replicated
     FROM sys.tables AS T
     WHERE is_ms_shipped = 0)
-SELECT rs.SchemaName + '.' + rs.TableName AS TableName,
+SELECT DB_NAME() AS DatabaseName,
+       rs.SchemaName,
+       rs.TableName,
        RS.RowsCount,
        TI.HasPK,
        TI.HasClusteredIndex,
