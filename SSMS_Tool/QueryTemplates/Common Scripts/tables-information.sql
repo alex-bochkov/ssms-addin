@@ -11,6 +11,22 @@ AS (SELECT SCHEMA_NAME(SO.schema_id) AS SchemaName,
           AND PS.OBJECT_ID > 100
           AND SCHEMA_NAME(SO.schema_id) <> 'sys'
     GROUP BY SCHEMA_NAME(SO.schema_id), OBJECT_NAME(PS.object_id), PS.object_id),
+ TableSizes
+AS (SELECT t.object_id AS ObjectId,
+           CAST (ROUND(((SUM(a.used_pages) * 8) / 1024.00), 2) AS NUMERIC (36, 2)) AS UsedSpaceMB,
+           CAST (ROUND(((SUM(CASE WHEN p.data_compression > 0 THEN a.used_pages ELSE 0 END) * 8) / 1024.00), 2) AS NUMERIC (36, 2)) AS UsedSpaceMB_Compressed
+    FROM sys.tables AS t
+         INNER JOIN
+         sys.indexes AS i
+         ON t.OBJECT_ID = i.object_id
+         INNER JOIN
+         sys.partitions AS p
+         ON i.object_id = p.OBJECT_ID
+            AND i.index_id = p.index_id
+         INNER JOIN
+         sys.allocation_units AS a
+         ON p.partition_id = a.container_id
+    GROUP BY t.object_id),
  TableInformation
 AS (SELECT NAME,
            object_id AS ObjectId,
@@ -44,6 +60,8 @@ SELECT DB_NAME() AS DatabaseName,
        rs.SchemaName,
        rs.TableName,
        RS.RowsCount,
+       TS.UsedSpaceMB,
+       TS.UsedSpaceMB_Compressed,
        TI.HasPK,
        TI.HasClusteredIndex,
        TI.PKisClustered,
@@ -56,4 +74,8 @@ FROM RowsStatistics AS RS
      ON RS.ObjectId = TI.ObjectId
      LEFT OUTER JOIN
      LastReadWrites AS L
-     ON L.objectId = RS.ObjectId;
+     ON L.objectId = RS.ObjectId
+     LEFT OUTER JOIN
+     TableSizes AS TS
+     ON TS.ObjectId = TI.ObjectId;
+
