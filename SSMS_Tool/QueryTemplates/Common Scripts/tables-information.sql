@@ -2,6 +2,7 @@ WITH RowsStatistics
 AS (SELECT SCHEMA_NAME(SO.schema_id) AS SchemaName,
            OBJECT_NAME(PS.object_id) AS TableName,
            PS.object_id AS ObjectId,
+           SO.create_date,
            SUM(row_count) AS RowsCount
     FROM sys.dm_db_partition_stats AS PS
          INNER JOIN
@@ -10,7 +11,7 @@ AS (SELECT SCHEMA_NAME(SO.schema_id) AS SchemaName,
     WHERE PS.index_id < 2
           AND PS.OBJECT_ID > 100
           AND SCHEMA_NAME(SO.schema_id) <> 'sys'
-    GROUP BY SCHEMA_NAME(SO.schema_id), OBJECT_NAME(PS.object_id), PS.object_id),
+    GROUP BY SCHEMA_NAME(SO.schema_id), OBJECT_NAME(PS.object_id), PS.object_id, SO.create_date),
  TableSizes
 AS (SELECT t.object_id AS ObjectId,
            CAST (ROUND(((SUM(a.used_pages) * 8) / 1024.00), 2) AS NUMERIC (36, 2)) AS UsedSpaceMB,
@@ -67,7 +68,8 @@ SELECT DB_NAME() AS DatabaseName,
        TI.PKisClustered,
        TI.is_replicated,
        L.[LastUserUpdate] AS LastWrite,
-       COALESCE (L.LastUserScan, L.LastUserSeek, L.LastUserLookup) AS LastRead
+       COALESCE (L.LastUserScan, L.LastUserSeek, L.LastUserLookup) AS LastRead,
+       RS.Create_date as CreateDate
 FROM RowsStatistics AS RS
      FULL OUTER JOIN
      TableInformation AS TI
@@ -77,5 +79,6 @@ FROM RowsStatistics AS RS
      ON L.objectId = RS.ObjectId
      LEFT OUTER JOIN
      TableSizes AS TS
-     ON TS.ObjectId = TI.ObjectId;
+     ON TS.ObjectId = TI.ObjectId
+ORDER BY 5 DESC;
 
