@@ -32,13 +32,13 @@ WHERE s.name = N'FailedLogins';
 
 ;WITH RawData
 AS (SELECT --n.query('.') AS event_data,
-		   n.value('(@timestamp)[1]', 'datetime') AS [EventDateTime],
-		   n.value('(data[@name="error_number"]/value)[1]', 'int') AS [ErrorNumber],
-           n.value('(data[@name="severity"]/value)[1]', 'int') AS [Severity],
-           n.value('(data[@name="message"]/value)[1]', 'varchar(max)') AS [ErrorMessage],
-           n.value('(action[@name="nt_username"]/value)[1]', 'varchar(max)') AS [nt_username],
-           n.value('(action[@name="client_hostname"]/value)[1]', 'varchar(max)') AS [client_hostname],
-           n.value('(action[@name="client_app_name"]/value)[1]', 'varchar(max)') AS [client_app_name]
+	n.value('(@timestamp)[1]', 'datetime') AS [EventDateTime],
+	n.value('(data[@name="error_number"]/value)[1]', 'int') AS [ErrorNumber],
+	n.value('(data[@name="severity"]/value)[1]', 'int') AS [Severity],
+	n.value('(data[@name="message"]/value)[1]', 'varchar(max)') AS [ErrorMessage],
+	n.value('(action[@name="nt_username"]/value)[1]', 'varchar(max)') AS [nt_username],
+	n.value('(action[@name="client_hostname"]/value)[1]', 'varchar(max)') AS [client_hostname],
+	n.value('(action[@name="client_app_name"]/value)[1]', 'varchar(max)') AS [client_app_name]
     FROM @target_data.nodes('RingBufferTarget/event[@name=''error_reported'']') AS q(n))
 SELECT 
 	*
