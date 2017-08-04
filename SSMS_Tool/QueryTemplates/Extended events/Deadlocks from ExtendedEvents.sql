@@ -1,7 +1,8 @@
 Use Master
-SELECT
+SELECT TOP 10 
        xed.value('@timestamp', 'datetime') as Creation_Date,
-       xed.query('.') AS Extend_Event
+       xed.query('.') AS Extend_Event,
+       CAST(xed.query('.').value('(event/data[@name="xml_report"]/value)[1]', 'varchar(max)') as XML) AS [Graph]
 FROM
 (
        SELECT CAST([target_data] AS XML) AS Target_Data
