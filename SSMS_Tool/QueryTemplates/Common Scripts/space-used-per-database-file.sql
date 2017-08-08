@@ -34,6 +34,9 @@ FROM sys.database_files AS f WITH (NOLOCK)
 OPTION (RECOMPILE);
 '
 
-SELECT * FROM #Stats;
+SELECT 
+  'DBCC SHRINKFILE (''' + FileName + ''' , 0)',
+  * 
+FROM #Stats;
 
 DROP TABLE #Stats;
