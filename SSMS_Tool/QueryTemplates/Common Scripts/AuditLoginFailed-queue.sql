@@ -138,8 +138,8 @@ WITH ACTIVATION
 );
 GO
 
-/* Test the Event Notification by 
-
-
+/* Test the Event Notification 
+--try to login with incorrect username/password
+--check new events:
 SELECT * FROM [Monitor].[AuditLoginFailed];
 */
