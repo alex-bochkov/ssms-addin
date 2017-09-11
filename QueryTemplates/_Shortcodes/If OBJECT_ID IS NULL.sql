@@ -1,0 +1,1 @@
+IF OBJECT_ID('tempdb..#Root') IS NOT NULL DROP TABLE #Root;
