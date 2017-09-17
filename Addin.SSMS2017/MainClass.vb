@@ -80,6 +80,8 @@ Public NotInheritable Class MainClass
         RecreateTemplates()
 
 
+
+
     End Sub
 
 
@@ -111,6 +113,38 @@ Public NotInheritable Class MainClass
     Private Sub MenuItemCallback_SettingForm(sender As Object, e As EventArgs)
         Dim message = String.Format(CultureInfo.CurrentCulture, "Inside {0}.MenuItemCallback()", Me.GetType().FullName)
         Dim title = "SettingForm"
+
+
+
+
+
+
+        'Dim CommandBars = ServiceCache.ExtensibilityModel.CommandBars
+        'Dim myTemporaryToolbar = CommandBars.Item("SSMS2017.Addin")
+        'Dim a = 0
+        'Dim Exist = False
+        'Dim Cont = myTemporaryToolbar.Controls(5)
+        'For Each Control In Cont.Controls
+        '    If Control.tag = "FOLDER" Then
+        '        Exist = True
+        '    End If
+        'Next
+        'If Not Exist Then
+        '    Dim popup2 As CommandBarPopup = Cont.Controls.Add(MsoControlType.msoControlPopup, Nothing, Nothing, 1, True)
+        '    popup2.Caption = "FOLDER"
+        '    popup2.BeginGroup = False
+        '    popup2.Visible = True
+
+        '    Dim Cont2 = Cont.Controls(5)
+        '    Cont2.Parent = popup2
+
+
+        'End If
+
+
+
+
+        '**********************************
 
 
         Dim SettingUI = New SettingFormUI
@@ -539,6 +573,14 @@ Public NotInheritable Class MainClass
             Me.matches = matches
         End Sub
 
+        Private Sub DynamicItemMenuCommand_BeforeQueryStatus(sender As Object, e As EventArgs) Handles Me.BeforeQueryStatus
+
+        End Sub
+
+        Private Sub DynamicItemMenuCommand_CommandChanged(sender As Object, e As EventArgs) Handles Me.CommandChanged
+
+        End Sub
+
         Public Overrides Function DynamicItemMatch(cmdId As Integer) As Boolean
             ' Call the supplied predicate to test whether the given cmdId is a match.  
             ' If it is, store the command id in MatchedCommandid   
@@ -558,8 +600,6 @@ Public NotInheritable Class MainClass
     Private Sub OnInvokedDynamicItem(sender As Object, args As EventArgs)
 
         Dim invokedCommand As DynamicItemMenuCommand = DirectCast(sender, DynamicItemMenuCommand)
-
-
 
         If TemplatesList.ContainsKey(invokedCommand.MatchedCommandId) Then
             Dim TemplateFile As ScriptInfo = TemplatesList.Item(invokedCommand.MatchedCommandId)
@@ -600,7 +640,11 @@ Public NotInheritable Class MainClass
 
 
     Private Sub OnBeforeQueryStatusDynamicItem(sender As Object, args As EventArgs)
+
         Dim matchedCommand As DynamicItemMenuCommand = DirectCast(sender, DynamicItemMenuCommand)
+
+
+
 
         Dim isRootItem As Boolean = (matchedCommand.MatchedCommandId = 0)
 
@@ -627,6 +671,7 @@ Public NotInheritable Class MainClass
         Else
             matchedCommand.Text = "< error fetching the script file >"
         End If
+
 
 
         ''''*********************************
