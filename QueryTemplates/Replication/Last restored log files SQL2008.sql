@@ -3,8 +3,8 @@ SELECT SD.[secondary_database],
        MS.last_copied_date,
        SD.[last_restored_date],
        MS.last_restored_latency,
-       DATEADD(minute, -MS.last_restored_latency + 7 * 60, SD.[last_restored_date]) AS DatabaseTimestamp,
-       DATEDIFF(minute, DATEADD(minute, -MS.last_restored_latency + 7 * 60, SD.[last_restored_date]), GETDATE()) AS ActualLatency
+       DATEADD(minute, -MS.last_restored_latency + DATEDIFF(hour, GETDATE(), GETUTCDATE()) * 60, SD.[last_restored_date]) AS DatabaseTimestamp,
+       DATEDIFF(minute, DATEADD(minute, -MS.last_restored_latency + DATEDIFF(hour, GETDATE(), GETUTCDATE()) * 60, SD.[last_restored_date]), GETDATE()) AS ActualLatency
 FROM [msdb].[dbo].[log_shipping_secondary_databases] AS SD
      INNER JOIN
      [msdb].[dbo].[log_shipping_monitor_secondary] AS MS
