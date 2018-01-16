@@ -37,6 +37,7 @@ OPTION (RECOMPILE);
 SELECT 
   'DBCC SHRINKFILE (''' + FileName + ''' , 0)',
   * 
-FROM #Stats;
+FROM #Stats
+ORDER BY AvailableSpaceInMB DESC;
 
 DROP TABLE #Stats;
