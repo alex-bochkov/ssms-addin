@@ -18,8 +18,8 @@ USE master;
 CREATE CERTIFICATE DatabaseMirroring WITH SUBJECT = 'Certificate for database mirroring';  
 GO  
 
-BACKUP CERTIFICATE DatabaseMirroring TO FILE = 'C:\DatabaseMirroring.cer'
-  WITH PRIVATE KEY(ENCRYPTION BY PASSWORD='<password>', FILE='C:\DatabaseMirroring.pvk');
+BACKUP CERTIFICATE DatabaseMirroring TO FILE = 'C:\Distr\DatabaseMirroring.cer'
+  WITH PRIVATE KEY(ENCRYPTION BY PASSWORD='password', FILE='C:\Distr\DatabaseMirroring.pvk');
 
-CREATE CERTIFICATE DatabaseMirroring FROM FILE ='C:\DatabaseMirroring.cer'
-  WITH PRIVATE KEY(FILE='C:\DatabaseMirroring.pvk', DECRYPTION BY PASSWORD='<password>');
+CREATE CERTIFICATE DatabaseMirroring FROM FILE ='C:\Distr\DatabaseMirroring.cer'
+  WITH PRIVATE KEY(FILE='C:\Distr\DatabaseMirroring.pvk', DECRYPTION BY PASSWORD='password');
