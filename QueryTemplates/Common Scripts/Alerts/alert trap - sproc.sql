@@ -8,8 +8,11 @@ BEGIN
 		ErrorNumber int, 
 		Severity int, 
 		DatabaseName nvarchar(128), 
-		ErrorMessage nvarchar(max)
+		ErrorMessage nvarchar(max),
+		AlertSent bit
 	)
+	
+	CREATE INDEX IDX_ServerErrors_1 ON ServerErrors (AlertSent) WHERE (AlertSent = 0);
 
 END;
 
