@@ -1,4 +1,20 @@
-select hostname, db_name(dbid) as DatabaseName, loginame, count(*) as ConnectionCount
-from sys.sysprocesses 
-group by hostname, db_name(dbid), loginame
-order by 2
+SELECT hostname,
+       db_name(dbid) AS DatabaseName,
+       loginame,
+       count(*) AS ConnectionCount
+FROM sys.sysprocesses
+GROUP BY hostname, db_name(dbid), loginame
+ORDER BY 2;
+
+SELECT ec.client_net_address,
+       es.[program_name],
+       es.[host_name],
+       es.login_name,
+       COUNT(ec.session_id) AS [connection count]
+FROM sys.dm_exec_sessions AS es WITH (NOLOCK)
+     INNER JOIN
+     sys.dm_exec_connections AS ec WITH (NOLOCK)
+     ON es.session_id = ec.session_id
+GROUP BY ec.client_net_address, es.[program_name], es.[host_name], es.login_name
+ORDER BY ec.client_net_address, es.[program_name]
+OPTION (RECOMPILE);
