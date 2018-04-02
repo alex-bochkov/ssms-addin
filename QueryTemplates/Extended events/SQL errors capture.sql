@@ -11,7 +11,7 @@ ADD EVENT sqlserver.error_reported
     ) 
 ADD TARGET package0.asynchronous_file_target
     (
-    SET filename = 'D:\ExtendedEvents\ErrorCapture.xel'
+    SET filename = 'ErrorCapture.xel'
     )
 WITH  (
         MAX_MEMORY = 4096 KB,
@@ -41,8 +41,7 @@ AS (SELECT DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), CURRENT_TIMESTAMP), xevents.ev
            xevents.event_data.value('(event/action[@name="client_hostname"]/value)[1]', 'nvarchar(max)') AS [client_hostname],
            xevents.event_data.value('(event/action[@name="sql_text"]/value)[1]', 'nvarchar(max)') AS [sql_text],
            xevents.event_data
-    FROM sys.fn_xe_file_target_read_file('D:\ExtendedEvents\ErrorCapture*.xel', 
-									'D:\ExtendedEvents\ErrorCapture*.xem', NULL, NULL) 
+    FROM sys.fn_xe_file_target_read_file('ErrorCapture*.xel', 'ErrorCapture*.xem', NULL, NULL) 
 		CROSS APPLY (SELECT CAST (event_data AS XML) AS event_data) AS xevents)
 SELECT 
   *
