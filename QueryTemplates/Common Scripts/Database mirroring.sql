@@ -15,7 +15,7 @@ CREATE MASTER KEY ENCRYPTION BY PASSWORD = '<password>';
 GO  
 
 USE master;  
-CREATE CERTIFICATE DatabaseMirroring WITH SUBJECT = 'Certificate for database mirroring';  
+CREATE CERTIFICATE DatabaseMirroring WITH SUBJECT = 'Certificate for database mirroring', EXPIRY_DATE = '2100-01-01';  
 GO  
 
 BACKUP CERTIFICATE DatabaseMirroring TO FILE = 'C:\Distr\DatabaseMirroring.cer'
