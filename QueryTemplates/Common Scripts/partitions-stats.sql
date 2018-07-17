@@ -1,5 +1,6 @@
 --paritioned table and index details
 SELECT
+      SCHEMA_NAME(o.schema_id) AS SchemaName,
       OBJECT_NAME(p.object_id) AS ObjectName,
       i.name                   AS IndexName,
       p.index_id               AS IndexID,
@@ -16,6 +17,8 @@ FROM sys.partitions                  AS p
 JOIN sys.indexes                     AS i
       ON i.object_id = p.object_id
       AND i.index_id = p.index_id
+JOIN sys.tables				 AS o
+	ON i.object_id = o.object_id
 JOIN sys.data_spaces                 AS ds
       ON ds.data_space_id = i.data_space_id
 JOIN sys.partition_schemes           AS ps
@@ -38,6 +41,7 @@ WHERE
 UNION ALL
 --non-partitioned table/indexes
 SELECT
+      SCHEMA_NAME(o.schema_id)    AS SchemaName,
       OBJECT_NAME(p.object_id)    AS ObjectName,
       i.name                      AS IndexName,
       p.index_id                  AS IndexID,
@@ -52,6 +56,8 @@ FROM sys.partitions     AS p
 JOIN sys.indexes        AS i
       ON i.object_id = p.object_id
       AND i.index_id = p.index_id
+JOIN sys.tables		AS o
+	  ON i.object_id = o.object_id
 JOIN sys.data_spaces    AS ds
       ON ds.data_space_id = i.data_space_id
 JOIN sys.filegroups           AS fg
