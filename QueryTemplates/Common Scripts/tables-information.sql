@@ -3,6 +3,7 @@ AS (SELECT SCHEMA_NAME(SO.schema_id) AS SchemaName,
            OBJECT_NAME(PS.object_id) AS TableName,
            PS.object_id AS ObjectId,
            SO.create_date,
+           COUNT(DISTINCT ps.partition_number) as PartitionCount,
            SUM(row_count) AS RowsCount
     FROM sys.dm_db_partition_stats AS PS
          INNER JOIN
@@ -63,6 +64,7 @@ SELECT DB_NAME() AS DatabaseName,
        RS.RowsCount,
        TS.UsedSpaceMB,
        TS.UsedSpaceMB_Compressed,
+       RS.PartitionCount,
        TI.HasPK,
        TI.HasClusteredIndex,
        TI.PKisClustered,
