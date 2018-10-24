@@ -1,23 +1,37 @@
 --PUBLISHER
 use master
 exec sp_replicationdboption @dbname = '<DB Name>',
-@optname = 'publish',
-@value = 'true'
+	@optname = 'publish',
+	@value = 'true'
 Go
 
 USE [<DB Name>];
 exec sp_addpublication @publication = N'<DB Name>_Publication'
 , @description = N'Transactional publication from Publisher ''<Server Name>''.'
-, @sync_method = N'concurrent', @retention = 0, @allow_push = N'true'
-, @allow_pull = N'true', @allow_anonymous = N'true', @enabled_for_internet = N'false'
-, @snapshot_in_defaultfolder = N'true', @compress_snapshot = N'false', @ftp_port = 21
-, @ftp_login = N'anonymous', @allow_subscription_copy = N'false', @add_to_active_directory = N'false'
-, @repl_freq = N'continuous', @status = N'active', @independent_agent = N'true'
-, @immediate_sync = N'true', @allow_sync_tran = N'false', @autogen_sync_procs = N'false'
-, @allow_queued_tran = N'false', @allow_dts = N'false', @replicate_ddl = 1
+, @sync_method = N'concurrent'
+, @retention = 0, @allow_push = N'true'
+, @allow_pull = N'true'
+, @allow_anonymous = N'true'
+, @enabled_for_internet = N'false'
+, @snapshot_in_defaultfolder = N'true'
+, @compress_snapshot = N'false'
+, @ftp_port = 21
+, @ftp_login = N'anonymous'
+, @allow_subscription_copy = N'false'
+, @add_to_active_directory = N'false'
+, @repl_freq = N'continuous'
+, @status = N'active'
+, @independent_agent = N'true'
+, @immediate_sync = N'true'
+, @allow_sync_tran = N'false'
+, @autogen_sync_procs = N'false'
+, @allow_queued_tran = N'false'
+, @allow_dts = N'false'
+, @replicate_ddl = 1
 -- from backup
-, @allow_initialize_from_backup = N'true', @enabled_for_p2p = N'false', @enabled_for_het_sub = N'false'
-
+, @allow_initialize_from_backup = N'true'
+, @enabled_for_p2p = N'false'
+, @enabled_for_het_sub = N'false'
 GO
 
 
@@ -27,23 +41,34 @@ IF EXISTS (SELECT *
     DROP PROCEDURE miscAddArticle;
 GO
 CREATE PROCEDURE miscAddArticle
-@schema VARCHAR (128),
-@article VARCHAR (128)
+	@sourceSchema VARCHAR (128),
+	@targetSchema VARCHAR (128),
+	@article VARCHAR (128)
 AS
 DECLARE @sql AS VARCHAR (8000);
 SET @sql = 'sp_addarticle @publication = N''<DB Name>_Publication''
-, @article = N''' + @article + ''', @source_owner = N''' + @schema + '''
-, @source_object = N''' + @article + ''', @type = N''logbased''
-, @description = N'''', @creation_script = N'''', @pre_creation_cmd = N''drop''
-, @schema_option = 0x00000000080350DF, @identityrangemanagementoption = N''manual''
-, @destination_table = N''' + @article + ''', @destination_owner = N''' + @schema + '''
-, @status = 24, @vertical_partition = N''false'', @ins_cmd = N''CALL [sp_MSins_' + @article + ']''
-, @del_cmd = N''CALL [sp_MSdel_' + @article + ']'', @upd_cmd = N''SCALL [sp_MSupd_' + @article + ']'' ';
+, @article = N''' + @article + '''
+, @source_owner = N''' + @sourceSchema + '''
+, @source_object = N''' + @article + '''
+, @type = N''logbased''
+, @description = N''''
+, @creation_script = N''''
+, @pre_creation_cmd = N''drop''
+, @schema_option = 0x00000000080350DF
+, @identityrangemanagementoption = N''manual''
+, @destination_table = N''' + @article + '''
+, @destination_owner = N''' + @targetSchema + '''
+, @status = 24
+, @vertical_partition = N''false''
+, @ins_cmd = N''CALL [sp_MSins_' + @article + ']''
+, @del_cmd = N''CALL [sp_MSdel_' + @article + ']''
+, @upd_cmd = N''SCALL [sp_MSupd_' + @article + ']'' 
+';
 EXECUTE (@sql);
 
 GO
 
-select 'exec miscAddArticle ''' + SCHEMA_NAME(schema_id) +''', ''' + name + ''' ', * 
+select 'exec miscAddArticle ''' + SCHEMA_NAME(schema_id) +''', ''' + SCHEMA_NAME(schema_id) +''', ''' + name + ''' ', * 
 from sys.tables
 where name in (select object_name(Parent_object_id)  from sys.objects
 				where type = 'PK'   )
