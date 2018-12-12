@@ -38,6 +38,7 @@ LEFT JOIN sys.partition_range_values AS prv_right
       AND prv_right.boundary_id = p.partition_number 
 WHERE
       OBJECTPROPERTY(p.object_id, 'ISMSShipped') = 0
+      AND p.index_id = 1 /* only show clustered index */
 UNION ALL
 --non-partitioned table/indexes
 SELECT
