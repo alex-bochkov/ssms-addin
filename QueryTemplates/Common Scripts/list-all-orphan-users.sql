@@ -46,5 +46,5 @@ CLOSE cur_users;
 DEALLOCATE cur_users;
 
 DROP TABLE #ADinfo;
-SELECT 'DROP USER ' + username, * FROM #OrphanUsers;
+SELECT 'USE [' + DB_NAME() + ']; DROP USER [' + username + '];', * FROM #OrphanUsers;
 DROP TABLE #OrphanUsers;
