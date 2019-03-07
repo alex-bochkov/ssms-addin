@@ -12,6 +12,11 @@ SELECT @sql =
 PRINT @sql
 SET @sql = ''
 --========================================================
+SELECT @sql = @sql + 'USE [' + DB_NAME() + ']';
+PRINT @sql + CHAR(13) + CHAR(13);
+
+SET @sql = '';
+--========================================================
 --script any certificates in the database
 --========================================================
 IF (SELECT COUNT(*) FROM sys.certificates) = 0
