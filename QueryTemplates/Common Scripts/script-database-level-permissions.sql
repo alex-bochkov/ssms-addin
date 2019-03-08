@@ -1,169 +1,158 @@
 /*
-From http://www.sqlservercentral.com/Forums/Topic1560182-1550-1.aspx
+	Adjusted from rom http://www.sqlservercentral.com/Forums/Topic1560182-1550-1.aspx
 */
-SET NOCOUNT ON 
-DECLARE @sql NVARCHAR(MAX)
-SET @sql = ''
-SELECT @sql = 
-'--======================================================================================' + CHAR(10) +
-'--==== IMPORTANT: Before executing these scripts check the  details to ensure they  ====' + CHAR(10) +
-'--==== are valid. For instance when crossing domains                                ====' + CHAR(10) +
-'--======================================================================================' + CHAR(10)
-PRINT @sql
-SET @sql = ''
---========================================================
-SELECT @sql = @sql + 'USE [' + DB_NAME() + ']';
-PRINT @sql + CHAR(13) + CHAR(13);
 
-SET @sql = '';
+DROP TABLE IF EXISTS #AllPermissions;
+DROP TABLE IF EXISTS #FilterByUsers;
+
+CREATE TABLE #AllPermissions (id int IDENTITY(1,1), [codeSQL] varchar(1024));
+CREATE TABLE #FilterByUsers (userName varchar(64));
+--INSERT INTO #FilterByUsers SELECT name FROM sys.server_principals WHERE name in (' old login to replace ');
+
+SET NOCOUNT ON 
+INSERT INTO #AllPermissions ([codeSQL]) VALUES('--=================================================================================');
+INSERT INTO #AllPermissions ([codeSQL]) VALUES('USE [' + DB_NAME() + '];');
+INSERT INTO #AllPermissions ([codeSQL]) VALUES('--=================================================================================');
+
 --========================================================
 --script any certificates in the database
 --========================================================
 IF (SELECT COUNT(*) FROM sys.certificates) = 0
 BEGIN
-		SELECT @sql = @sql + '/*No certificates found*/'
-		PRINT @sql + CHAR(13) + CHAR(13)
+	--INSERT INTO #AllPermissions ([codeSQL]) SELECT '/*No certificates found*/'
+	PRINT '/*No certificates found*/';
 END 
 ELSE
 BEGIN
-		SELECT @sql = '/*Scripting all user certificates' + CHAR(10) + 
-		'===================================================================================*/' + CHAR(13) + CHAR(13)
-		SELECT @sql = @sql + 'CREATE CERTIFICATE ' + name + 
+	INSERT INTO #AllPermissions ([codeSQL]) VALUES ('/* Scripting all user certificates */');
+	INSERT INTO #AllPermissions ([codeSQL])
+	SELECT 'CREATE CERTIFICATE ' + name + 
 		' ENCRYPTION BY PASSWORD = ''P@ssw0rd1''
 		WITH SUBJECT = ''' + issuer_name + ''', 
 		EXPIRY_DATE = ''' + CONVERT(NVARCHAR(25), expiry_date, 120) + '''' + CHAR(13)
-		FROM sys.certificates
-PRINT @sql + CHAR(13) + CHAR(13)
+	FROM sys.certificates
+
 END
-SET @sql = ''
+
 --======================================================
 --Script the database users
 --======================================================
 SELECT principal_id INTO #users FROM sys.database_principals WHERE type IN ('U', 'G', 'S') AND principal_id > 4
+	AND (name in (SELECT F.userName FROM #FilterByUsers F) OR (SELECT COUNT(*) FROM #FilterByUsers) = 0);
+
 IF (SELECT COUNT(*) FROM #users) = 0
 BEGIN
-		SELECT @sql = @sql + '/*No database users found*/'
-		PRINT @sql + CHAR(13) + CHAR(13)
+	--INSERT INTO #AllPermissions ([codeSQL]) SELECT '/*No database users found*/'
+	PRINT '/*No database users found*/';
 END 
 ELSE
 BEGIN
 	SET CONCAT_NULL_YIELDS_NULL OFF
-	DECLARE @uid INT
-	SELECT @sql = '/*Scripting all database users and schemas' + CHAR(10) + 
-	'===================================================================================' + CHAR(13) +
-	'Note: these are the users found in the database, but they may not all be valid, check them first*/' +
-	CHAR(13) + CHAR(13)
+	DECLARE @uid INT;
+
+	INSERT INTO #AllPermissions ([codeSQL]) SELECT '/* Scripting all database users and schemas */';
+
 	--SELECT @sql = @sql + 'USE ' + QUOTENAME(DB_NAME(DB_ID())) + CHAR(13) + CHAR(10) + CHAR(13)
 	WHILE (SELECT TOP 1 principal_id FROM #users) IS NOT NULL
 		BEGIN
-			SELECT TOP 1 @uid = principal_id FROM #users			
-			SELECT @sql = @sql + 'IF (SELECT name FROM sys.database_principals WHERE name = ''' + dp.name + ''') IS NULL' + CHAR(13) + 'BEGIN' + CHAR(13) +
-			'CREATE USER ' + QUOTENAME(dp.name) + 
-			/*CASE 
-			WHEN SUSER_SID(dp.name) IS NULL THEN ''
-			ELSE ' FOR LOGIN ' + QUOTENAME(dp.name)
-			END +*/
-			CASE
-			WHEN SUSER_SNAME(dp.sid) IS NULL THEN ' WITHOUT LOGIN'
-			ELSE ' FOR LOGIN ' + QUOTENAME(SUSER_SNAME(dp.sid)) 
-			END + 
-			CASE 			
-			WHEN dp.default_schema_name IS NULL AND dp.type <> 'G' THEN ' WITH DEFAULT_SCHEMA = [dbo]'
-			ELSE ' WITH DEFAULT_SCHEMA = [' + dp.default_schema_name + ']'
-			END + CHAR(13) + 'END' 
-			FROM sys.database_principals dp LEFT OUTER JOIN
-			sys.schemas sch ON dp.principal_id = sch.principal_id
-			WHERE dp.principal_id = @uid AND dp.TYPE IN ('U', 'G', 'S') AND dp.principal_id > 4			
+			SELECT TOP 1 @uid = principal_id FROM #users	
 			
-			PRINT @sql + CHAR(10) 
+			INSERT INTO #AllPermissions ([codeSQL]) 
+			SELECT 'IF (SELECT name FROM sys.database_principals WHERE name = ''' + dp.name + ''') IS NULL' + CHAR(13) + 'BEGIN' + CHAR(13) +
+			'	CREATE USER ' + QUOTENAME(dp.name) + 
+				/*CASE 
+				WHEN SUSER_SID(dp.name) IS NULL THEN ''
+				ELSE ' FOR LOGIN ' + QUOTENAME(dp.name)
+				END +*/
+				CASE
+				WHEN SUSER_SNAME(dp.sid) IS NULL THEN ' WITHOUT LOGIN'
+				ELSE ' FOR LOGIN ' + QUOTENAME(SUSER_SNAME(dp.sid)) 
+				END + 
+				CASE 			
+				WHEN dp.default_schema_name IS NULL AND dp.type <> 'G' THEN ' WITH DEFAULT_SCHEMA = [dbo]'
+				ELSE ' WITH DEFAULT_SCHEMA = [' + dp.default_schema_name + ']'
+				END + CHAR(13) + 'END' 
+				FROM sys.database_principals dp LEFT OUTER JOIN
+				sys.schemas sch ON dp.principal_id = sch.principal_id
+				WHERE dp.principal_id = @uid AND dp.TYPE IN ('U', 'G', 'S') AND dp.principal_id > 4			
+			
 			DELETE FROM #users WHERE principal_id = @uid
 			
-			SELECT @sql = ''
 		END
 		
 		DROP TABLE #users
 END
-SELECT @sql = ''
+
 --========================================================
 --Script any users that are protected by a cert
 --========================================================
 IF (SELECT count(*) FROM sys.database_principals dp INNER JOIN sys.certificates c ON dp.sid = c.sid
 	WHERE dp.type = 'C' AND dp.principal_id > 4) = 0
 BEGIN
-		SELECT @sql = @sql + '/*No certificated users found*/'
-		PRINT @sql + CHAR(13) + CHAR(13)
+	--INSERT INTO #AllPermissions ([codeSQL]) SELECT '/*No certificated users found*/'
+	PRINT '/*No certificated users found*/'
 END 
 ELSE
 BEGIN
-			SELECT @sql = '/*Scripting all certificated database users' + CHAR(10) + 
-			'===================================================================================*/' + CHAR(13)
-			--SELECT @sql = @sql + 'USE ' + QUOTENAME(DB_NAME(DB_ID())) + CHAR(13) --+ 'GO' + CHAR(10) 
-			SELECT @sql = @sql + 'CREATE USER ' + QUOTENAME(dp.name) + ' FOR CERTIFICATE ' + c.name
-	    	FROM sys.database_principals dp INNER JOIN sys.certificates c ON dp.sid = c.sid
-	  		WHERE dp.type = 'C' AND dp.principal_id > 4
+	INSERT INTO #AllPermissions ([codeSQL]) SELECT '/*Scripting all certificated database users*/';
+	INSERT INTO #AllPermissions ([codeSQL]) 
+	SELECT 'CREATE USER ' + QUOTENAME(dp.name) + ' FOR CERTIFICATE ' + c.name
+	FROM sys.database_principals dp INNER JOIN sys.certificates c ON dp.sid = c.sid
+	WHERE dp.type = 'C' AND dp.principal_id > 4
 	  		
-	  		PRINT @sql + CHAR(13) + CHAR(13)
 END
-SET @sql = ''
 --=======================================================
 --script all schemas
 --=======================================================
-		SELECT @sql = '/*Scripting all user schema permissions' + CHAR(10) + 
-		'===================================================================================*/' + CHAR(13)	
-		
-		--Script the permission grants on the schemas		
-		SELECT @sql = @sql + CHAR(13) + dp.state_desc COLLATE latin1_general_ci_as + ' ' + 
-		dp.permission_name + ' ON ' + dp.class_desc + '::' + QUOTENAME(sch.name) + 
-		' TO ' + QUOTENAME(dp2.name) + ' AS ' + QUOTENAME(dp3.name) 
-		FROM sys.database_permissions dp 
-		INNER JOIN sys.schemas sch ON dp.grantor_principal_id = sch.principal_id
-		INNER JOIN sys.database_principals dp2 ON dp.grantee_principal_id = dp2.principal_id
-		INNER JOIN sys.database_principals dp3 ON dp.grantor_principal_id = dp3.principal_id
-		WHERE dp.class = 3  --dp.major_id BETWEEN 1 AND 8
-		
-		PRINT @sql + CHAR(13) + CHAR(13) 
-SET @sql = ''
+INSERT INTO #AllPermissions ([codeSQL]) SELECT '/*Scripting all user schema permissions*/';		
+INSERT INTO #AllPermissions ([codeSQL]) 
+SELECT dp.state_desc COLLATE latin1_general_ci_as + ' ' + 
+	dp.permission_name + ' ON ' + dp.class_desc + '::' + QUOTENAME(sch.name) + 
+	' TO ' + QUOTENAME(dp2.name) + ' AS ' + QUOTENAME(dp3.name) 
+	FROM sys.database_permissions dp 
+	INNER JOIN sys.schemas sch ON dp.grantor_principal_id = sch.principal_id
+	INNER JOIN sys.database_principals dp2 ON dp.grantee_principal_id = dp2.principal_id
+	INNER JOIN sys.database_principals dp3 ON dp.grantor_principal_id = dp3.principal_id
+WHERE dp.class = 3  --dp.major_id BETWEEN 1 AND 8
+
 --========================================================
 --script database roles from the database
 --========================================================
 IF (SELECT COUNT(*) FROM sys.database_principals WHERE type = 'R' AND is_fixed_role <> 1 AND principal_id > 4) = 0
 BEGIN
-		SELECT @sql = @sql + '/*No database roles found*/'
-		PRINT @sql + CHAR(13) + CHAR(13)
+	--INSERT INTO #AllPermissions ([codeSQL]) SELECT '/*No database roles found*/'
+	PRINT '/*No database roles found*/';
 END 
 ELSE
 BEGIN
-			SELECT @sql = '/*Scripting all database roles' + CHAR(10) + 
-			'===================================================================================*/' + CHAR(13)
-			--SELECT @sql = @sql + 'USE ' + QUOTENAME(DB_NAME(DB_ID())) + CHAR(10) --+ 'GO' + CHAR(10)
-			SELECT @sql = @sql + 'CREATE ROLE ' + QUOTENAME(dp.name) + ' AUTHORIZATION ' + QUOTENAME(dp2.name) + CHAR(13)
-			FROM sys.database_principals dp INNER JOIN sys.database_principals dp2 
-			ON dp.owning_principal_id = dp2.principal_id
-			WHERE dp.type = 'R' AND dp.is_fixed_role <> 1 AND dp.principal_id > 4
-			
-			PRINT @sql + CHAR(13) + CHAR(13)
+	INSERT INTO #AllPermissions ([codeSQL]) SELECT '/*Scripting all database roles */';
+	INSERT INTO #AllPermissions ([codeSQL]) 
+	SELECT 'CREATE ROLE ' + QUOTENAME(dp.name) + ' AUTHORIZATION ' + QUOTENAME(dp2.name)
+	FROM sys.database_principals dp INNER JOIN sys.database_principals dp2 
+		ON dp.owning_principal_id = dp2.principal_id
+	WHERE dp.type = 'R' AND dp.is_fixed_role <> 1 AND dp.principal_id > 4
+
 END
-SET @sql = ''
+
 --=========================================================
 --script Application roles from the database
 --=========================================================
 IF (SELECT COUNT(*) FROM sys.database_principals WHERE type = 'A') = 0
 BEGIN
-		SELECT @sql = @sql + '/*No application roles found*/'
-		PRINT @sql + CHAR(13) + CHAR(13) 
+	--INSERT INTO #AllPermissions ([codeSQL]) SELECT '/*No application roles found*/'
+	PRINT '/*No application roles found*/'
 END 
 ELSE
 BEGIN
-		SELECT @sql = '/*Scripting all application roles' + CHAR(10) + 
-		'===================================================================================*/' + CHAR(13)
-		--SELECT @sql = @sql + 'USE ' + QUOTENAME(DB_NAME(DB_ID())) + CHAR(10) --+ 'GO' + CHAR(10)
-		SELECT @sql = @sql + 'CREATE APPLICATION ROLE ' + dp.name + ' WITH DEFAULT_SCHEMA = ' + 
-		QUOTENAME(dp.default_schema_name) + ', PASSWORD = N''P@ssw0rd1''' + CHAR(10)
-		FROM sys.database_principals dp
-		WHERE dp.type = 'A' AND dp.is_fixed_role <> 1 AND dp.principal_id > 4
-PRINT @sql + CHAR(13) + CHAR(13)
+	INSERT INTO #AllPermissions ([codeSQL]) SELECT '/*Scripting all application roles */'
+
+	INSERT INTO #AllPermissions ([codeSQL]) 
+	SELECT 'CREATE APPLICATION ROLE ' + dp.name + ' WITH DEFAULT_SCHEMA = ' + 
+	QUOTENAME(dp.default_schema_name) + ', PASSWORD = N''P@ssw0rd1'''
+	FROM sys.database_principals dp
+	WHERE dp.type = 'A' AND dp.is_fixed_role <> 1 AND dp.principal_id > 4
 END
-SET @sql = ''
+
 --===============================================================
 --got the roles so now we need to get any nested role permissions
 --===============================================================
@@ -171,46 +160,43 @@ IF (SELECT COUNT(*) from sys.database_principals dp inner join sys.database_role
 		ON dp.principal_id = drm.member_principal_id inner join sys.database_principals dp2 
 		ON drm.role_principal_id = dp2.principal_id WHERE dp.type = 'R') = 0
 BEGIN
-		SELECT @sql = + '/*No nested roles found*/'
-		PRINT @sql + CHAR(13) + CHAR(13)
+	--INSERT INTO #AllPermissions ([codeSQL]) SELECT '/*No nested roles found*/'
+	PRINT '/*No nested roles found*/'
 END 
 ELSE
 BEGIN
-		SELECT @sql = '/*Scripting all nested roles' + CHAR(10) + 
-		'===================================================================================*/' + CHAR(13)
-		--SELECT @sql = @sql + 'USE ' + QUOTENAME(DB_NAME(DB_ID())) + CHAR(10) --+ 'GO' + CHAR(10)
-		SELECT @sql = @sql + 'EXEC sp_addrolemember ''' + dp2.name + ''', ''' + dp.name + '''' + CHAR(10)
-		FROM sys.database_principals dp 
-		INNER JOIN sys.database_role_members drm
-		ON dp.principal_id = drm.member_principal_id 
-		INNER JOIN sys.database_principals dp2 
-		ON drm.role_principal_id = dp2.principal_id
-		WHERE dp.type = 'R'
-PRINT @sql + CHAR(13) + CHAR(13)
+	INSERT INTO #AllPermissions ([codeSQL]) SELECT '/*Scripting all nested roles */';
+	INSERT INTO #AllPermissions ([codeSQL]) SELECT 'EXEC sp_addrolemember ''' + dp2.name + ''', ''' + dp.name + ''''
+	FROM sys.database_principals dp 
+	INNER JOIN sys.database_role_members drm
+	ON dp.principal_id = drm.member_principal_id 
+	INNER JOIN sys.database_principals dp2 
+	ON drm.role_principal_id = dp2.principal_id
+	WHERE dp.type = 'R'
 END
-SET @sql = ''
+
 --================================================================
 --Scripting all user connection grants
 --================================================================
 IF		(SELECT COUNT(*) FROM sys.database_permissions dpm INNER JOIN sys.database_principals dp 
 		ON dpm.grantee_principal_id = dp.principal_id WHERE dp.principal_id > 4 AND dpm.class = 0 AND dpm.type = 'CO') = 0
 BEGIN
-		SELECT @sql = + '/*No database connection GRANTS found*/'
-		PRINT @sql + CHAR(13) + CHAR(13)
+	--INSERT INTO #AllPermissions ([codeSQL]) SELECT '/*No database connection GRANTS found*/'
+	PRINT '/*No database connection GRANTS found*/'
 END 
 ELSE
 BEGIN
-		SELECT @sql = '/*Scripting all database and connection GRANTS' + CHAR(10) + 
-		'===================================================================================*/' + CHAR(13)
-		--SELECT @sql = @sql + 'USE ' + QUOTENAME(DB_NAME(DB_ID())) + CHAR(10) --+ 'GO' + CHAR(10)
-		SELECT @sql = @sql + dpm.state_desc COLLATE Latin1_General_CI_AS + ' ' + 
-		dpm.permission_name COLLATE Latin1_General_CI_AS + ' TO ' + QUOTENAME(dp.name) + CHAR(13)
-		FROM sys.database_permissions dpm INNER JOIN sys.database_principals dp 
+	INSERT INTO #AllPermissions ([codeSQL]) SELECT '/*Scripting all database and connection GRANTS */'
+	INSERT INTO #AllPermissions ([codeSQL]) 
+	SELECT dpm.state_desc COLLATE Latin1_General_CI_AS + ' ' + 
+		dpm.permission_name COLLATE Latin1_General_CI_AS + ' TO ' + QUOTENAME(dp.name)
+	FROM sys.database_permissions dpm INNER JOIN sys.database_principals dp 
 		ON dpm.grantee_principal_id = dp.principal_id
-		WHERE dp.principal_id > 4 AND dpm.class = 0 --AND dpm.type = 'CO'
-PRINT @sql + CHAR(13) + CHAR(13)
+	WHERE dp.principal_id > 4 AND dpm.class = 0 --AND dpm.type = 'CO'
+		AND (dp.name in (SELECT F.userName FROM #FilterByUsers F) OR (SELECT COUNT(*) FROM #FilterByUsers) = 0)
+
 END
-SET @sql = ''
+
 --=================================================================
 --Now all the object level permissions
 --=================================================================
@@ -218,18 +204,13 @@ IF		(SELECT	COUNT(*) FROM sys.database_permissions dbpe INNER JOIN sys.database_
 		ON dbpr.principal_id = dbpe.grantee_principal_id INNER JOIN sys.objects obj 
 		ON dbpe.major_id = obj.object_id WHERE obj.type NOT IN ('IT','S','X')) = 0
 BEGIN
-		SELECT @sql = + '/*No database user object GRANTS found*/'
-		PRINT @sql + CHAR(13) + CHAR(13)
+	--INSERT INTO #AllPermissions ([codeSQL]) SELECT '/*No database user object GRANTS found*/'
+	PRINT '/*No database user object GRANTS found*/'
 END 
 ELSE
 BEGIN
-	
-		SELECT @sql = '/*Scripting all database user object GRANTS' + CHAR(10) + 
-		'===================================================================================*/' + CHAR(13)
-		--SELECT @sql = @sql + 'USE ' + QUOTENAME(DB_NAME(DB_ID())) + CHAR(13) --+ 'GO' 
-		PRINT @sql --+ CHAR(10)
-		SET @sql = ''
-		
+	INSERT INTO #AllPermissions ([codeSQL]) SELECT '/*Scripting all database user object GRANTS */' 
+
 		IF OBJECT_ID('tempdb..#objgrants') IS NOT NULL
 		BEGIN
 			DROP TABLE #objgrants
@@ -262,6 +243,7 @@ BEGIN
 		INNER JOIN sys.objects obj ON dbpe.major_id = obj.object_id
 		INNER JOIN sys.schemas sch ON obj.schema_id = sch.schema_id
 		WHERE obj.type NOT IN ('IT','S','X') 
+			AND (dbpr.name in (SELECT F.userName FROM #FilterByUsers F) OR (SELECT COUNT(*) FROM #FilterByUsers) = 0)
 		ORDER BY dbpr.name, obj.name
 			
 		WHILE (SELECT COUNT(*) FROM #objgrants) > 0
@@ -270,19 +252,18 @@ BEGIN
 			SELECT TOP 1 @state_desc = state_desc, @perm_name = perm_name, @sch_name = sch_name, 
 			@maj_ID = maj_ID, @name = name, @pr_name = pr_name FROM #objgrants
 			
-				SELECT @sql = @sql + @state_desc + ' ' + @perm_name +
+			INSERT INTO #AllPermissions ([codeSQL]) 
+			SELECT @state_desc + ' ' + @perm_name +
 				' ON [' + @sch_name + '].[' + @maj_ID + '] TO [' + @name + @pr_name
-				PRINT @sql 	
-				SET @sql = ''			
-DELETE FROM #objgrants WHERE state_desc = @state_desc AND perm_name = @perm_name 
-			AND sch_name = @sch_name AND maj_ID = @maj_ID AND name = @name AND pr_name = @pr_name
+		
+			DELETE FROM #objgrants WHERE state_desc = @state_desc AND perm_name = @perm_name 
+				AND sch_name = @sch_name AND maj_ID = @maj_ID AND name = @name AND pr_name = @pr_name
 			 
 		END
-		PRINT CHAR(13)
-DROP TABLE #objgrants
+	DROP TABLE #objgrants
 END
 		
-SET @sql = ''
+
 --=================================================================
 --Now script all the database roles the user have permissions to
 --=================================================================
@@ -291,23 +272,23 @@ IF		(SELECT COUNT(*) FROM sys.database_principals dp
 		INNER JOIN sys.database_principals dp2 ON drm.member_principal_id = dp2.principal_id
 		WHERE dp2.principal_id > 4 AND dp2.type <> 'R') = 0
 BEGIN
-		SELECT @sql = + '/*No database user role GRANTS found*/'
-		PRINT @sql + CHAR(13) + CHAR(13)
+		--INSERT INTO #AllPermissions ([codeSQL]) SELECT '/*No database user role GRANTS found*/'
+		PRINT '/*No database user role GRANTS found*/'
 END 
 ELSE
 BEGIN
 	
-		SELECT @sql = '/*Scripting all database user role permissions' + CHAR(10) + 
-		'===================================================================================*/' + CHAR(13)
-		--SELECT @sql = @sql + 'USE ' + QUOTENAME(DB_NAME(DB_ID())) + CHAR(13) + CHAR(10)	
-		SELECT @sql = @sql + 'EXEC sp_addrolemember ''' + dp.name + ''', ''' + dp2.name + '''' + CHAR(13)
+		INSERT INTO #AllPermissions ([codeSQL]) SELECT '/*Scripting all database user role permissions */';
+		INSERT INTO #AllPermissions ([codeSQL]) 
+		SELECT 'EXEC sp_addrolemember ''' + dp.name + ''', ''' + dp2.name + ''''
 		FROM sys.database_principals dp
 		INNER JOIN sys.database_role_members drm ON dp.principal_id = drm.role_principal_id
 		INNER JOIN sys.database_principals dp2 ON drm.member_principal_id = dp2.principal_id
 		WHERE dp2.principal_id > 4 AND dp2.type <> 'R'
-		
-		PRINT @sql + CHAR(13) + CHAR(13)
+			AND (dp2.name in (SELECT F.userName FROM #FilterByUsers F) OR (SELECT COUNT(*) FROM #FilterByUsers) = 0) 
+
 END
-	
-SET @sql = ''
-PRINT '--Finished!'
+
+--UPDATE #AllPermissions SET codeSQL = REPLACE(codeSQL, ' old login ', ' new login ');
+
+SELECT codeSQL FROM #AllPermissions ORDER BY id
