@@ -12,7 +12,7 @@ SELECT
       CASE pf.boundary_value_on_right
             WHEN 1 THEN 'RIGHT'
             ELSE 'LEFT' END    AS Range,
-      p.rows AS [Rows],
+      FORMAT(p.rows, 'N0') AS [Rows],
       p.[data_compression_desc] AS [Compression]
 FROM sys.partitions                  AS p
 JOIN sys.indexes                     AS i
