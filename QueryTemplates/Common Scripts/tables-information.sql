@@ -61,9 +61,9 @@ AS (SELECT object_id AS ObjectID,
 SELECT DB_NAME() AS DatabaseName,
        rs.SchemaName,
        rs.TableName,
-       RS.RowsCount,
-       TS.UsedSpaceMB,
-       TS.UsedSpaceMB_Compressed,
+       FORMAT(RS.RowsCount, 'N0') AS RowsCount,
+       FORMAT(TS.UsedSpaceMB, 'N0') AS UsedSpaceMB,
+       FORMAT(TS.UsedSpaceMB_Compressed, 'N0') AS UsedSpaceMB_Compressed,
        RS.PartitionCount,
        TI.HasPK,
        TI.HasClusteredIndex,
@@ -82,5 +82,5 @@ FROM RowsStatistics AS RS
      LEFT OUTER JOIN
      TableSizes AS TS
      ON TS.ObjectId = TI.ObjectId
-ORDER BY 5 DESC;
+ORDER BY TS.UsedSpaceMB DESC;
 
