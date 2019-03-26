@@ -12,3 +12,9 @@ WHERE is_hypothetical = 0
 -- maintenance
 ALTER INDEX [IndexName] ON [TableName] REORGANIZE WITH (COMPRESS_ALL_ROW_GROUPS = ON);  
 ALTER INDEX [IndexName] ON [TableName] REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = COLUMNSTORE);
+
+-- get row group physical stats
+SELECT *   
+FROM sys.dm_db_column_store_row_group_physical_stats   
+WHERE object_id  = object_id('TableName')  
+ORDER BY row_group_id;  
