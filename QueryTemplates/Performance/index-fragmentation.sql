@@ -5,7 +5,9 @@ SELECT dbschemas.[name] as 'Schema',
 	AVG(indexstats.avg_fragmentation_in_percent) AS avg_fragmentation_in_percent,
 	SUM(indexstats.page_count) AS page_count,
 	'ALTER INDEX ['+dbindexes.[name]+'] ON [' + dbschemas.name + '].['+dbtables.[name]+'] REORGANIZE;' AS CmdReorg,
-	'ALTER INDEX ['+dbindexes.[name]+'] ON [' + dbschemas.name + '].['+dbtables.[name]+'] REBUILD WITH (FILLFACTOR = 90, ONLINE = ON, DATA_COMPRESSION = PAGE, SORT_IN_TEMPDB = ON);' AS CmdRebuild
+	'ALTER INDEX ['+dbindexes.[name]+'] ON [' + dbschemas.name + '].['+dbtables.[name]+'] REBUILD ' +
+		'WITH (ONLINE = ON (WAIT_AT_LOW_PRIORITY ( MAX_DURATION = 1 MINUTES, ABORT_AFTER_WAIT = SELF )), ' + 
+		'SORT_IN_TEMPDB = ON);' AS CmdRebuild
 FROM sys.dm_db_index_physical_stats (DB_ID(), NULL, NULL, NULL, NULL) AS indexstats
 INNER JOIN sys.tables dbtables on dbtables.[object_id] = indexstats.[object_id]
 INNER JOIN sys.schemas dbschemas on dbtables.[schema_id] = dbschemas.[schema_id]
