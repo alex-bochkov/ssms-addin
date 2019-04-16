@@ -11,10 +11,23 @@ WHERE is_hypothetical = 0
   
 -- maintenance
 ALTER INDEX [IndexName] ON [TableName] REORGANIZE WITH (COMPRESS_ALL_ROW_GROUPS = ON);  
-ALTER INDEX [IndexName] ON [TableName] REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = COLUMNSTORE);
+ALTER INDEX [IndexName] ON [TableName] REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = COLUMNSTORE_ARCHIVE, MAXDOP = 1);
 
 -- get row group physical stats
 SELECT *   
 FROM sys.dm_db_column_store_row_group_physical_stats   
 WHERE object_id  = object_id('TableName')  
 ORDER BY row_group_id;  
+
+-- get some starts around CIX - helps to see which partitions need to be rebuilt
+SELECT object_name(object_id)
+	,partition_number
+	,FORMAT(sum(row_group_id), 'N0') AS row_group_count
+	,FORMAT(sum(total_rows), 'N0') AS row_count
+	,FORMAT(sum(size_in_bytes), 'N0') AS size_in_bytes
+	,FORMAT(sum(size_in_bytes) / sum(total_rows), 'N0') AS size_per_row
+FROM sys.dm_db_column_store_row_group_physical_stats
+WHERE object_name(object_id) LIKE ' table name %'
+GROUP BY object_name(object_id)
+	,partition_number
+ORDER BY partition_number; 
