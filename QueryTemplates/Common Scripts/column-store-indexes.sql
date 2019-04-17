@@ -19,7 +19,7 @@ FROM sys.dm_db_column_store_row_group_physical_stats
 WHERE object_id  = object_id('TableName')  
 ORDER BY row_group_id;  
 
--- get some starts around CIX - helps to see which partitions need to be rebuilt
+-- get some stats around CIX - helps to see which partitions need to be rebuilt
 SELECT object_name(object_id)
 	,partition_number
 	,FORMAT(sum(row_group_id), 'N0') AS row_group_count
