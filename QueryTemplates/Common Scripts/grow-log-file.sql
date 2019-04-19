@@ -22,14 +22,7 @@ select
   mf.growth, 
   mf.* 
 from sys.master_files mf 
-cross apply (
-    SELECT 
-      COUNT(*) AS VLF 
-    FROM 
-      sys.dm_db_log_info(mf.database_id) li
-  ) AS li 
-where 
-  mf.type = 1 
-  and mf.database_id > 4 
-order by 
-  mf.growth
+cross apply (SELECT COUNT(*) AS VLF FROM sys.dm_db_log_info(mf.database_id) li) AS li 
+where mf.type = 1 
+	and mf.database_id > 4 
+order by mf.growth
