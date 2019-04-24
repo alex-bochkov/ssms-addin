@@ -1,15 +1,27 @@
+DECLARE @DatabaseName NVARCHAR(128) = ' < database name > ';
+DECLARE @PrimaryServer NVARCHAR(128) = ' < server name > ';
+
+DECLARE @SourceDir NVARCHAR(128) = '\\ < server name > \s$\backups$\' + @DatabaseName + '\LOG\';
+DECLARE @TargetDir NVARCHAR(128) = 'X:\LS\' + @DatabaseName;
+DECLARE @CopyJobName NVARCHAR(128) = N'LSCopy_' + @PrimaryServer + '_' + @DatabaseName;
+DECLARE @RestoreJobName NVARCHAR(128) = N'LSRestore_' + @PrimaryServer + '_' + @DatabaseName;
+
+
+
+
+
 DECLARE @LS_Secondary__CopyJobId	AS uniqueidentifier
 DECLARE @LS_Secondary__RestoreJobId	AS uniqueidentifier
 DECLARE @LS_Secondary__SecondaryId	AS uniqueidentifier
 DECLARE @LS_Add_RetCode	As int
 
 EXEC @LS_Add_RetCode = master.dbo.sp_add_log_shipping_secondary_primary
-	@primary_server = N'MyPrimaryServer'
-	,@primary_database = N'AdventureWorks'
-	,@backup_source_directory = N'\\myserver\backups'
-	,@backup_destination_directory = N'D:\MSSQL\LogShip'
-	,@copy_job_name = N'LSCopy_MyPrimaryServer_AdventureWorks'
-	,@restore_job_name = N'LSRestore_MyPrimaryServer_AdventureWorks'
+	@primary_server = @PrimaryServer
+	,@primary_database = @DatabaseName
+	,@backup_source_directory = @SourceDir
+	,@backup_destination_directory = @TargetDir
+	,@copy_job_name = @CopyJobName
+	,@restore_job_name = @RestoreJobName
 	,@file_retention_period = 4320
 	,@overwrite = 1
 	,@copy_job_id = @LS_Secondary__CopyJobId OUTPUT
@@ -68,9 +80,9 @@ DECLARE @LS_Add_RetCode2	As int
 IF (@@ERROR = 0 AND @LS_Add_RetCode = 0)
 BEGIN
 	EXEC @LS_Add_RetCode2 = master.dbo.sp_add_log_shipping_secondary_database
-	@secondary_database = N'AdventureWorks'
-	,@primary_server = N'MyPrimaryServer'
-	,@primary_database = N'AdventureWorks'
+	@secondary_database = @DatabaseName
+	,@primary_server = @PrimaryServer
+	,@primary_database = @DatabaseName
 	,@restore_delay = 0
 	,@restore_mode = 1
 	,@disconnect_users	= 1
