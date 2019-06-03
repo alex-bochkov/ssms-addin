@@ -39,13 +39,13 @@ BEGIN
 	,@enabled = 1
 	,@freq_type = 4
 	,@freq_interval = 1
-	,@freq_subday_type = 8
-	,@freq_subday_interval = 4
+	,@freq_subday_type = 4
+	,@freq_subday_interval = 15
 	,@freq_recurrence_factor = 0
 	,@active_start_date = 20110127
 	,@active_end_date = 99991231
-	,@active_start_time = 83000
-	,@active_end_time = 173000
+	,@active_start_time = 500
+	,@active_end_time = 235959
 	,@schedule_uid = @LS_SecondaryCopyJobScheduleUID OUTPUT
 	,@schedule_id = @LS_SecondaryCopyJobScheduleID OUTPUT
 
@@ -61,13 +61,13 @@ BEGIN
 	,@enabled = 1
 	,@freq_type = 4
 	,@freq_interval = 1
-	,@freq_subday_type = 8
-	,@freq_subday_interval = 4
+	,@freq_subday_type = 4
+	,@freq_subday_interval = 15
 	,@freq_recurrence_factor = 0
 	,@active_start_date = 20110127
 	,@active_end_date = 99991231
-	,@active_start_time = 84500
-	,@active_end_time = 174500
+	,@active_start_time = 1000
+	,@active_end_time = 235959
 	,@schedule_uid = @LS_SecondaryRestoreJobScheduleUID OUTPUT
 	,@schedule_id = @LS_SecondaryRestoreJobScheduleID OUTPUT
 
