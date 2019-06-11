@@ -4,7 +4,7 @@ DECLARE @FileName VARCHAR(100)  = 'Ff_ppbAdOrderAccumulatedDeliveredClickStats20
 DECLARE @DesiredSize INT        = 30000;
 
 DECLARE @CurrentSize INT;
-SELECT @CurrentSize = size * 8 / 1024 FROM sys.database_files WHERE name = @FileName
+SELECT @CurrentSize = ROUND(size * 8 / 1024, -3) FROM sys.database_files WHERE name = @FileName
 
 WHILE (@CurrentSize > @DesiredSize)
 BEGIN
