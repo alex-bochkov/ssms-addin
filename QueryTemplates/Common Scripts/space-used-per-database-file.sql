@@ -32,12 +32,19 @@ FROM sys.database_files AS f WITH (NOLOCK)
      sys.data_spaces AS fg WITH (NOLOCK)
      ON f.data_space_id = fg.data_space_id
 OPTION (RECOMPILE);
-'
+';
 
 SELECT 
-  'DBCC SHRINKFILE (''' + FileName + ''' , 0)',
-  * 
-FROM #Stats
+      'DBCC SHRINKFILE (''' + FileName + ''' , 0)' AS ShrinkCommand
+      ,[DatabaseName]
+      ,[FileName]
+      ,[PhysicalName]
+      ,FORMAT([TotalSizeinMB], 'N0') [TotalSizeinMB]
+      ,FORMAT([AvailableSpaceInMB], 'N0') [AvailableSpaceInMB]
+      ,[PercentFree]
+      ,[file_id]
+      ,[FilegroupName]
+FROM [DBA].[dbo].[FileSizeStats]
 ORDER BY AvailableSpaceInMB DESC;
 
 DROP TABLE #Stats;
