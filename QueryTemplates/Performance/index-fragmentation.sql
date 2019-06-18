@@ -1,5 +1,6 @@
 SELECT dbschemas.[name] as 'Schema', 
 	dbtables.[name] as 'Table', 
+	dbindexes.[index_id] as 'IndexID',
 	dbindexes.[name] as 'Index',
 	indexstats.partition_number,
 	FORMAT(AVG(indexstats.avg_fragmentation_in_percent), 'N2') AS avg_fragmentation_in_percent,
@@ -8,7 +9,7 @@ SELECT dbschemas.[name] as 'Schema',
 		+ CAST(indexstats.partition_number AS VARCHAR(3)) + ';' AS CmdReorg,
 	'ALTER INDEX ['+dbindexes.[name]+'] ON [' + dbschemas.name + '].['+dbtables.[name]+'] REBUILD PARTITION = ' 
 		+ CAST(indexstats.partition_number AS VARCHAR(3))
-		+ 'WITH (ONLINE = ON (WAIT_AT_LOW_PRIORITY ( MAX_DURATION = 1 MINUTES, ABORT_AFTER_WAIT = SELF )), '
+		+ ' WITH (ONLINE = ON (WAIT_AT_LOW_PRIORITY ( MAX_DURATION = 1 MINUTES, ABORT_AFTER_WAIT = SELF )), '
 		+ 'SORT_IN_TEMPDB = ON);' AS CmdRebuild
 FROM sys.dm_db_index_physical_stats (DB_ID(), NULL, NULL, NULL, NULL) AS indexstats
 INNER JOIN sys.tables dbtables on dbtables.[object_id] = indexstats.[object_id]
@@ -20,6 +21,7 @@ WHERE indexstats.database_id = DB_ID()
 	AND dbindexes.[name] IS NOT NULL
 GROUP BY dbschemas.[name], 
 	dbtables.[name], 
+	dbindexes.[index_id],
 	dbindexes.[name],
 	indexstats.partition_number
 ORDER BY avg_fragmentation_in_percent DESC
