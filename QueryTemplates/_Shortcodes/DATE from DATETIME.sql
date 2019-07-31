@@ -1,1 +1,0 @@
-DATEADD(D, 0, DATEDIFF(D, 0, [datetime]))
