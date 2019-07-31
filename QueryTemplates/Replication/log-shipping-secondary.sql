@@ -1,7 +1,7 @@
 DECLARE @DatabaseName NVARCHAR(128) = ' < database name > ';
 DECLARE @PrimaryServer NVARCHAR(128) = ' < server name > ';
 
-DECLARE @SourceDir NVARCHAR(128) = '\\ < server name > \s$\backups$\' + @DatabaseName + '\LOG\';
+DECLARE @SourceDir NVARCHAR(128) = '\\ < server name > \backups$\' + @DatabaseName + '\LOG\';
 DECLARE @TargetDir NVARCHAR(128) = 'X:\LS\' + @DatabaseName;
 DECLARE @CopyJobName NVARCHAR(128) = N'LSCopy_' + @PrimaryServer + '_' + @DatabaseName;
 DECLARE @RestoreJobName NVARCHAR(128) = N'LSRestore_' + @PrimaryServer + '_' + @DatabaseName;
