@@ -20,3 +20,46 @@ INNER JOIN   sys.dm_os_buffer_descriptors AS b
 WHERE   b.database_id = DB_ID()
 GROUP BY   src.[Object],   src.[Type],   src.[Index],   src.Index_Type
 ORDER BY   buffer_pages DESC;
+----------------------------------------------------------------
+
+SELECT DB_NAME(dobd.database_id) as dbname
+  ,dobd.database_id
+  ,dobd.allocation_unit_id
+  ,dobd.page_type
+INTO #buffer_pool
+FROM sys.dm_os_buffer_descriptors dobd
+WHERE dobd.database_id = DB_ID(' < database > ')
+ AND allocation_unit_id IS NOT NULL
+
+SELECT dbname AS DB
+	,objname AS db_object_name
+	,COUNT(dbname) AS cache_page_count
+	,COUNT('x') * 8.0 / 1024 AS size_mb
+FROM (
+	SELECT allocation_units.dbname
+		,allocation_units.database_id
+		,allocation_units.allocation_unit_id AS au_unit_id
+		,allocation_units.page_type
+		,object_details.allocation_unit_id
+		,object_details.type
+		,object_details.type_desc
+		,object_details.name AS objname
+		,object_details.index_id
+	FROM #buffer_pool allocation_units
+	LEFT OUTER JOIN (
+		SELECT au.allocation_unit_id
+			,au.type
+			,au.type_desc
+			,au.total_pages
+			,o.object_id
+			,o.name
+			,p.index_id
+		FROM sys.allocation_units au
+		INNER JOIN sys.partitions p ON au.container_id = p.hobt_id 
+		INNER JOIN sys.objects o ON p.object_id = o.object_id
+		) AS object_details ON allocation_units.allocation_unit_id = object_details.allocation_unit_id
+	) tab
+GROUP BY dbname
+	,objname
+ORDER BY size_mb DESC
+OPTION (MAXDOP 0)
