@@ -15,4 +15,10 @@
 
 <img src="https://github.com/alekseybochkov/ssms-addin/blob/master/screenshot.png?raw=true"/>
 
-<p>SQL Server Management Studio 2016 is not supported.</p>
+<p>SQL Server Management Studio 2016+ is not supported.</p>
+
+<h2>Addin for SQL Server Management Studio 2018</h2>
+
+<p>Total work in progress.</p>
+
+<img src="https://github.com/alekseybochkov/ssms-addin/blob/master/screenshot2018.png?raw=true"/>
