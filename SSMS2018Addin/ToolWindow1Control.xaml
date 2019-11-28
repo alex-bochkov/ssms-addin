@@ -7,15 +7,21 @@
              Background="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"
              Foreground="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"
              mc:Ignorable="d"
-             d:DesignHeight="40" d:DesignWidth="300"
+             d:DesignHeight="400" d:DesignWidth="300"
              Name="ToolBox">
     <Grid Margin="0,0,0,10">
         <StackPanel Orientation="Vertical" Margin="0,0,0,0">
             <StackPanel Orientation="Horizontal">
+           
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <Button Content="Format selection" Click="button1_Click"  x:Name="button1" Margin="0,0,0,0" RenderTransformOrigin="-0.486,-0.136"/>
+                <Button Content="Format selection" Click="button1_Click"  x:Name="button1" Margin="2,2,5,0" RenderTransformOrigin="-0.486,-0.136"/>
+                <Menu Name="FileMenu" Margin="2,2,5,0">
+                    <MenuItem Header="TSQL Templates" Name="FileMenuTemplates"/>
+                </Menu>
+                <Button Content="Refresh templates" Click="buttonRefresh_Click"  />
             </StackPanel>
+
 
         </StackPanel>
     </Grid>

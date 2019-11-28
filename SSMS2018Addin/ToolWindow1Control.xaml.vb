@@ -2,7 +2,9 @@
 
 Imports System
 Imports System.Collections.Generic
+Imports System.Drawing
 Imports System.IO
+Imports System.Windows.Controls
 Imports EnvDTE
 Imports Microsoft.SqlServer.TransactSql.ScriptDom
 Imports Microsoft.VisualStudio.Shell
@@ -25,12 +27,94 @@ Partial Public Class ToolWindow1Control
 
     Function AddFiles()
 
+        Dim Folder = "C:\glassdoor\addin\ssms-addin\QueryTemplates"
 
+        If My.Computer.FileSystem.DirectoryExists(Folder) Then
 
-        'ToolBox
+            Dim i As Integer = 1
 
+            FileMenuTemplates.Items.Clear()
+
+            CreateCommands(FileMenuTemplates, Folder, i)
+
+        End If
 
     End Function
+
+    Function CreateCommands(MenuItem As MenuItem, Folder As String, ByRef i As Integer)
+
+
+        Dim Dirs = My.Computer.FileSystem.GetDirectories(Folder)
+        For Each DirStr In Dirs
+
+            Dim DI = My.Computer.FileSystem.GetFileInfo(DirStr)
+
+            Dim mi = New MenuItem
+            mi.Header = DI.Name
+
+            MenuItem.Items.Add(mi)
+
+            CreateCommands(mi, Path.Combine(Folder, DirStr), i)
+
+            i = i + 1
+
+        Next
+
+        Dim Files = My.Computer.FileSystem.GetFiles(Folder)
+
+        For Each File In Files
+
+            Dim FI = My.Computer.FileSystem.GetFileInfo(File)
+
+
+
+            Dim mi = New MenuItem
+            mi.Header = FI.Name
+            mi.ToolTip = File
+            mi.Icon = My.Resources.ResourceManager.GetObject("sql-file-format")
+
+            AddHandler mi.Click, AddressOf insert_template
+
+            MenuItem.Items.Add(mi)
+
+            i = i + 1
+
+        Next
+
+    End Function
+
+    Private Sub buttonRefresh_Click(ByVal sender As Object, ByVal e As System.EventArgs)
+
+        AddFiles()
+
+        System.Windows.MessageBox.Show("Templates have been refreshed!")
+
+    End Sub
+
+    Private Sub insert_template(ByVal sender As Object, ByVal e As System.EventArgs)
+
+        Try
+
+            Dim FileName As String = sender.ToolTip
+
+            Dim FileContent = My.Computer.FileSystem.ReadAllText(FileName)
+
+            Dim dte As DTE = TryCast(Package.GetGlobalService(GetType(DTE)), DTE)
+
+            Dim selection As TextSelection = DirectCast(dte.ActiveDocument.Selection, TextSelection)
+
+            selection.Delete()
+
+            selection.Insert(FileContent.Trim)
+
+        Catch ex As Exception
+            System.Windows.MessageBox.Show(ex.Message)
+        End Try
+
+
+
+    End Sub
+
 
     ''' <summary>
     ''' Handles click on the button by displaying a message box.
