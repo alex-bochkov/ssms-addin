@@ -72,7 +72,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.SqlServer.TransactSql.ScriptDom">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Microsoft SQL Server\140\Tools\Binn\ManagementStudio\Extensions\Application\Microsoft.SqlServer.TransactSql.ScriptDom.dll</HintPath>
+      <HintPath>..\..\..\..\Program Files (x86)\Microsoft SQL Server Management Studio 18\Common7\IDE\Extensions\Application\Microsoft.SqlServer.TransactSql.ScriptDom.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />

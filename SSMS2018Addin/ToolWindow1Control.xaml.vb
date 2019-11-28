@@ -69,7 +69,7 @@ Partial Public Class ToolWindow1Control
 
                 Dim SqlParser As TSqlParser = Nothing
 
-                Dim TargetVersion As String = "2017" 'SettingManager.GetTSQLFormatVersion()
+                Dim TargetVersion As String = "2019" 'SettingManager.GetTSQLFormatVersion()
                 If TargetVersion = "2008" Then
                     SqlParser = New TSql100Parser(False)
                 ElseIf TargetVersion = "2012" Then
@@ -80,8 +80,8 @@ Partial Public Class ToolWindow1Control
                     SqlParser = New TSql130Parser(False)
                 ElseIf TargetVersion = "2017" Then
                     SqlParser = New TSql140Parser(False)
-                    'ElseIf TargetVersion = "2019" Then
-                    '    SqlParser = New TSql150Parser(False)
+                ElseIf TargetVersion = "2019" Then
+                    SqlParser = New TSql150Parser(False)
                 Else
                     SqlParser = New TSql130Parser(False)
                 End If
@@ -115,8 +115,8 @@ Partial Public Class ToolWindow1Control
                     Gen = New Sql130ScriptGenerator
                 ElseIf TargetVersion = "2017" Then
                     Gen = New Sql140ScriptGenerator
-                    'ElseIf TargetVersion = "2019" Then
-                    '    Gen = New Sql150ScriptGenerator
+                ElseIf TargetVersion = "2019" Then
+                    Gen = New Sql150ScriptGenerator
                 Else
                     Gen = New Sql130ScriptGenerator
                 End If
