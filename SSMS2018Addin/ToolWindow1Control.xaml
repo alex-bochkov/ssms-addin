@@ -1,0 +1,22 @@
+﻿<UserControl x:Class="ToolWindow1Control"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+             Background="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"
+             Foreground="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"
+             mc:Ignorable="d"
+             d:DesignHeight="40" d:DesignWidth="300"
+             Name="ToolBox">
+    <Grid Margin="0,0,0,10">
+        <StackPanel Orientation="Vertical" Margin="0,0,0,0">
+            <StackPanel Orientation="Horizontal">
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Button Content="Format selection" Click="button1_Click"  x:Name="button1" Margin="0,0,0,0" RenderTransformOrigin="-0.486,-0.136"/>
+            </StackPanel>
+
+        </StackPanel>
+    </Grid>
+</UserControl>
