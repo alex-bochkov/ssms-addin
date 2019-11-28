@@ -83,7 +83,7 @@ Partial Public Class ToolWindow1Control
                 ElseIf TargetVersion = "2019" Then
                     SqlParser = New TSql150Parser(False)
                 Else
-                    SqlParser = New TSql130Parser(False)
+                    SqlParser = New TSql140Parser(False)
                 End If
 
                 Dim parseErrors As IList(Of ParseError) = New List(Of ParseError)
@@ -118,7 +118,7 @@ Partial Public Class ToolWindow1Control
                 ElseIf TargetVersion = "2019" Then
                     Gen = New Sql150ScriptGenerator
                 Else
-                    Gen = New Sql130ScriptGenerator
+                    Gen = New Sql140ScriptGenerator
                 End If
 
                 Gen.Options.IncludeSemicolons = False
