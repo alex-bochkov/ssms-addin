@@ -1,4 +1,16 @@
-<h2>Simple addin for SQL Server Management Studio 2008-2014 that helps with:</h2>
+<h2>Addin for SQL Server Management Studio 2018</h2>
+<p>Work in progress...</p>
+<ul>
+  <li>Format selected TSQL code with internal SQL Server parser or Poor Man's SQL Formatter</li>
+  <li>Quick access to code templates</li>
+</ul>
+
+<img src="https://github.com/alekseybochkov/ssms-addin/blob/master/Addin.SSMS2018/pics/1.png?raw=true"/>
+<img src="https://github.com/alekseybochkov/ssms-addin/blob/master/Addin.SSMS2018/pics/2.png?raw=true"/>
+<img src="https://github.com/alekseybochkov/ssms-addin/blob/master/Addin.SSMS2018/pics/3.png?raw=true"/>
+
+
+<h2>(OLD) Simple addin for SQL Server Management Studio 2008-2014 that helps with:</h2>
 <ul>
   <li>Export current GRID to Excel files (without re-execution!)</li>
   <li>Format selected TSQL code with internal SQL Server parser</li>
@@ -17,8 +29,3 @@
 
 <p>SQL Server Management Studio 2016+ is not supported.</p>
 
-<h2>Addin for SQL Server Management Studio 2018</h2>
-
-<p>Total work in progress.</p>
-
-<img src="https://github.com/alekseybochkov/ssms-addin/blob/master/screenshot2018.png?raw=true"/>
