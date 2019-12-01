@@ -5,6 +5,8 @@
   <li>Quick access to code templates</li>
 </ul>
 
+<p>.NET 4.7.2 is required.</p>
+
 <img src="https://github.com/alekseybochkov/ssms-addin/blob/master/Addin.SSMS2018/pics/1.png?raw=true"/>
 <img src="https://github.com/alekseybochkov/ssms-addin/blob/master/Addin.SSMS2018/pics/2.png?raw=true"/>
 <img src="https://github.com/alekseybochkov/ssms-addin/blob/master/Addin.SSMS2018/pics/3.png?raw=true"/>
