@@ -28,11 +28,12 @@ Partial Class SettingForm
         Me.Label2 = New System.Windows.Forms.Label()
         Me.TextBoxScriptFolder = New System.Windows.Forms.TextBox()
         Me.ComboBoxParserVersion = New System.Windows.Forms.ComboBox()
+        Me.CheckBoxUsePoorManParser = New System.Windows.Forms.CheckBox()
         Me.SuspendLayout()
         '
         'Button1
         '
-        Me.Button1.Location = New System.Drawing.Point(179, 63)
+        Me.Button1.Location = New System.Drawing.Point(179, 95)
         Me.Button1.Name = "Button1"
         Me.Button1.Size = New System.Drawing.Size(141, 34)
         Me.Button1.TabIndex = 0
@@ -41,7 +42,7 @@ Partial Class SettingForm
         '
         'Button2
         '
-        Me.Button2.Location = New System.Drawing.Point(326, 62)
+        Me.Button2.Location = New System.Drawing.Point(326, 94)
         Me.Button2.Name = "Button2"
         Me.Button2.Size = New System.Drawing.Size(126, 35)
         Me.Button2.TabIndex = 1
@@ -82,11 +83,22 @@ Partial Class SettingForm
         Me.ComboBoxParserVersion.Size = New System.Drawing.Size(316, 21)
         Me.ComboBoxParserVersion.TabIndex = 5
         '
+        'CheckBoxUsePoorManParser
+        '
+        Me.CheckBoxUsePoorManParser.AutoSize = True
+        Me.CheckBoxUsePoorManParser.Location = New System.Drawing.Point(136, 58)
+        Me.CheckBoxUsePoorManParser.Name = "CheckBoxUsePoorManParser"
+        Me.CheckBoxUsePoorManParser.Size = New System.Drawing.Size(308, 17)
+        Me.CheckBoxUsePoorManParser.TabIndex = 6
+        Me.CheckBoxUsePoorManParser.Text = "Use Poor Man's Parser instead of default SQL Server parser"
+        Me.CheckBoxUsePoorManParser.UseVisualStyleBackColor = True
+        '
         'SettingForm
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(460, 105)
+        Me.ClientSize = New System.Drawing.Size(460, 141)
+        Me.Controls.Add(Me.CheckBoxUsePoorManParser)
         Me.Controls.Add(Me.ComboBoxParserVersion)
         Me.Controls.Add(Me.TextBoxScriptFolder)
         Me.Controls.Add(Me.Label2)
@@ -107,4 +119,5 @@ Partial Class SettingForm
     Friend WithEvents Label2 As System.Windows.Forms.Label
     Friend WithEvents TextBoxScriptFolder As System.Windows.Forms.TextBox
     Friend WithEvents ComboBoxParserVersion As System.Windows.Forms.ComboBox
+    Friend WithEvents CheckBoxUsePoorManParser As System.Windows.Forms.CheckBox
 End Class

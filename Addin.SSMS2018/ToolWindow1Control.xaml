@@ -1,30 +1,28 @@
-﻿<UserControl x:Class="ToolWindow1Control"
+﻿<UserControl
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+             xmlns:Reflection="clr-namespace:System.Reflection;assembly=System.Reflection.Metadata" x:Class="ToolWindow1Control"
              Background="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"
              Foreground="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"
              mc:Ignorable="d" d:DesignWidth="300"
-             Name="ToolBox" Height="35">
+             x:Name="ToolBox" Height="35">
     <Grid Margin="0,0,0,15">
         <StackPanel Orientation="Vertical" Margin="0,0,0,0">
+            <StackPanel Orientation="Horizontal"/>
             <StackPanel Orientation="Horizontal">
+                <Menu x:Name="FileMenu" Margin="2,2,5,0">
+                    <MenuItem x:Name="MenuFormat" Header="Format Selection" Click="button1_Click"/>
+                       
+                    <MenuItem Header="TSQL Templates" x:Name="FileMenuTemplates"/>
+                    <MenuItem Header="?">
+                        <MenuItem x:Name="MenuSettings" Header="Setting" Click="buttonSetting_Click" />
+                        <MenuItem Header="About" x:Name="FileMenuHelp" Click="buttonHelp_Click" >
 
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <Menu Name="FileMenu" Margin="2,2,5,0">
-                    <MenuItem Header="Actions" Name="FileMenuActions">
-                        <MenuItem Header="Format Selection" Click="button1_Click"/>
-                        <MenuItem Header="Setting" Click="buttonSetting_Click" >
-                            <MenuItem.Icon>
-                                <Image Source="Resources/sql-icon.png" />
-                            </MenuItem.Icon>
                         </MenuItem>
                     </MenuItem>
-                    <MenuItem Header="TSQL Templates" Name="FileMenuTemplates"/>
-                    <MenuItem Header="?" Name="FileMenuHelp" Click="buttonHelp_Click" />
                 </Menu>
             </StackPanel>
 

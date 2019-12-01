@@ -78,7 +78,23 @@ Namespace SettingManager
 
         End Function
 
+        Function GetSQLParserType() As Boolean
 
+            Dim TSQLParserType As String = GetRegisterValue("TSQLParserType")
+
+            If String.IsNullOrEmpty(TSQLParserType) Then
+
+                Return False
+
+            End If
+
+            If TSQLParserType = "False" Then
+                Return False
+            Else
+                Return True
+            End If
+
+        End Function
 
         Function SaveTemplatesFolder(Folder As String) As Boolean
 
@@ -89,6 +105,12 @@ Namespace SettingManager
         Function SaveSQLParserVersion(TSQLParserVersion As String) As Boolean
 
             Return SaveRegisterValue("TSQLParserVersion", TSQLParserVersion)
+
+        End Function
+
+        Function SaveSQLParserType(TSQLParserType As Boolean) As Boolean
+
+            Return SaveRegisterValue("TSQLParserType", TSQLParserType.ToString())
 
         End Function
 

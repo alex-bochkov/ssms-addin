@@ -92,6 +92,10 @@
     <Reference Include="Microsoft.SqlServer.TransactSql.ScriptDom">
       <HintPath>..\..\..\..\Program Files (x86)\Microsoft SQL Server Management Studio 18\Common7\IDE\Extensions\Application\Microsoft.SqlServer.TransactSql.ScriptDom.dll</HintPath>
     </Reference>
+    <Reference Include="PoorMansTSqlFormatterLib35, Version=1.6.13.31433, Culture=neutral, PublicKeyToken=fb9a6042fd921db9, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>PoorMansTSqlFormatterLib35\PoorMansTSqlFormatterLib35.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
@@ -190,11 +194,14 @@
     </VSCTCompile>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="PoorMansTSqlFormatterLib35\LICENSE.txt" />
+    <Content Include="PoorMansTSqlFormatterLib35\PoorMansTSqlFormatterLib35.dll" />
     <Content Include="Resources\CommandAddin.png" />
-    <None Include="Resources\sql-file-format.ico">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Resources\sql-icon.png" />
+    <None Include="Resources\folder.png" />
+    <None Include="Resources\refresh.png" />
+    <None Include="Resources\sql-script.png" />
+    <None Include="Resources\settings.png" />
+    <None Include="Resources\magic-wand.png" />
     <Content Include="Resources\ToolWindow1Command.png" />
   </ItemGroup>
   <ItemGroup>

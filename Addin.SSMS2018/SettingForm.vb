@@ -6,6 +6,7 @@
 
         TextBoxScriptFolder.Text = SettingManager.GetTemplatesFolder()
         ComboBoxParserVersion.SelectedItem = SettingManager.GetSQLParserVersion()
+        CheckBoxUsePoorManParser.Checked = SettingManager.GetSQLParserType()
 
     End Sub
 
@@ -24,6 +25,8 @@
         If Not String.IsNullOrEmpty(ComboBoxParserVersion.SelectedItem) Then
             SettingManager.SaveSQLParserVersion(ComboBoxParserVersion.SelectedItem)
         End If
+
+        SettingManager.SaveSQLParserType(CheckBoxUsePoorManParser.Checked)
 
         Close()
 

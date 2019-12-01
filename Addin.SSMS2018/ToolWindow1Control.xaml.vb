@@ -3,6 +3,7 @@
 Imports System
 Imports System.Collections.Generic
 Imports System.Drawing
+Imports System.Drawing.Imaging
 Imports System.IO
 Imports System.Windows.Controls
 Imports System.Windows.Media.Imaging
@@ -21,7 +22,10 @@ Partial Public Class ToolWindow1Control
         InitializeComponent()
 
         AddFiles(False)
-        ' Add any initialization after the InitializeComponent() call.
+
+        MenuSettings.Icon = GetImage("settings")
+        'MenuFormat.Icon = GetImage("magic_wand")
+
 
     End Sub
 
@@ -46,7 +50,7 @@ Partial Public Class ToolWindow1Control
 
         Dim mi = New MenuItem
         mi.Header = "Refresh This List"
-        mi.Icon = My.Resources.ResourceManager.GetObject("sql-file-format")
+        mi.Icon = GetImage("refresh")
 
         AddHandler mi.Click, AddressOf buttonRefresh_Click
 
@@ -64,6 +68,7 @@ Partial Public Class ToolWindow1Control
 
             Dim mi = New MenuItem
             mi.Header = DI.Name
+            mi.Icon = GetImage("folder")
 
             MenuItem.Items.Add(mi)
 
@@ -79,15 +84,11 @@ Partial Public Class ToolWindow1Control
 
             Dim FI = My.Computer.FileSystem.GetFileInfo(File)
 
-            Dim ObjImage = New System.Windows.Controls.Image
-            ObjImage.Source = New BitmapImage(New Uri("Resources/sql-file-format.ico", UriKind.Relative))
-            'ObjImage.Source = My.Resources.ResourceManager.GetObject("sql-file-format")
 
             Dim mi = New MenuItem
             mi.Header = FI.Name
             mi.ToolTip = File
-            mi.Icon = ObjImage
-            'mi.Icon = My.Resources.ResourceManager.GetObject("sql-file-format")
+            mi.Icon = GetImage("sql_script")
 
             AddHandler mi.Click, AddressOf insert_template
 
@@ -96,6 +97,33 @@ Partial Public Class ToolWindow1Control
             i = i + 1
 
         Next
+
+    End Function
+
+
+    Function GetImage(Name As String) As System.Windows.Controls.Image
+
+        '' This is the only way I was able to add image into the menu
+        Try
+
+            Dim memory As MemoryStream = New MemoryStream()
+            My.Resources.ResourceManager.GetObject(Name).Save(memory, ImageFormat.Png)
+            memory.Position = 0
+            Dim BitmapImage = New BitmapImage()
+            BitmapImage.BeginInit()
+            BitmapImage.StreamSource = memory
+            BitmapImage.CacheOption = BitmapCacheOption.OnLoad
+            BitmapImage.EndInit()
+
+            Dim ObjImage = New System.Windows.Controls.Image
+            ObjImage.Source = BitmapImage
+
+            Return ObjImage
+
+        Catch ex As Exception
+
+        End Try
+
 
     End Function
 
@@ -154,6 +182,71 @@ Partial Public Class ToolWindow1Control
 
     End Sub
 
+    Function ParseCodeViaTSQLParser(OldCode As String) As String
+
+        Dim ResultCode As String = ""
+
+        Dim SqlParser As TSqlParser = Nothing
+
+        Dim TargetVersion As String = SettingManager.GetSQLParserVersion()
+        If TargetVersion = "SQL Server 2008" Then
+            SqlParser = New TSql100Parser(False)
+        ElseIf TargetVersion = "SQL Server 2012" Then
+            SqlParser = New TSql110Parser(False)
+        ElseIf TargetVersion = "SQL Server 2014" Then
+            SqlParser = New TSql120Parser(False)
+        ElseIf TargetVersion = "SQL Server 2016" Then
+            SqlParser = New TSql130Parser(False)
+        ElseIf TargetVersion = "SQL Server 2017" Then
+            SqlParser = New TSql140Parser(False)
+        ElseIf TargetVersion = "SQL Server 2019" Then
+            SqlParser = New TSql150Parser(False)
+        Else
+            SqlParser = New TSql140Parser(False)
+        End If
+
+        Dim parseErrors As IList(Of ParseError) = New List(Of ParseError)
+        Dim result As TSqlFragment = SqlParser.Parse(New StringReader(OldCode), parseErrors)
+
+        If parseErrors.Count > 0 Then
+
+            Dim ErrorStr = ""
+            For Each StrError In parseErrors
+                ErrorStr = ErrorStr + Environment.NewLine + StrError.Message
+            Next
+
+            Throw New System.Exception("TSqlParser unable format selected T-SQL due to a syntax error." + Environment.NewLine + ErrorStr)
+
+        End If
+
+
+
+        Dim StrAdd2 = ""
+        Dim Gen As SqlScriptGenerator = Nothing
+
+        If TargetVersion = "SQL Server 2008" Then
+            Gen = New Sql100ScriptGenerator
+        ElseIf TargetVersion = "SQL Server 2012" Then
+            Gen = New Sql110ScriptGenerator
+        ElseIf TargetVersion = "SQL Server 2014" Then
+            Gen = New Sql120ScriptGenerator
+        ElseIf TargetVersion = "SQL Server 2016" Then
+            Gen = New Sql130ScriptGenerator
+        ElseIf TargetVersion = "SQL Server 2017" Then
+            Gen = New Sql140ScriptGenerator
+        ElseIf TargetVersion = "SQL Server 2019" Then
+            Gen = New Sql150ScriptGenerator
+        Else
+            Gen = New Sql140ScriptGenerator
+        End If
+
+        Gen.Options.IncludeSemicolons = False
+        Gen.Options.AlignClauseBodies = False
+        Gen.GenerateScript(result, ResultCode)
+
+        Return ResultCode
+
+    End Function
 
     Private Sub FormatSelection()
 
@@ -170,70 +263,44 @@ Partial Public Class ToolWindow1Control
 
                 Dim OldStr = selection.Text
 
-                Dim SqlParser As TSqlParser = Nothing
-
-                Dim TargetVersion As String = SettingManager.GetSQLParserVersion()
-                If TargetVersion = "SQL Server 2008" Then
-                    SqlParser = New TSql100Parser(False)
-                ElseIf TargetVersion = "SQL Server 2012" Then
-                    SqlParser = New TSql110Parser(False)
-                ElseIf TargetVersion = "SQL Server 2014" Then
-                    SqlParser = New TSql120Parser(False)
-                ElseIf TargetVersion = "SQL Server 2016" Then
-                    SqlParser = New TSql130Parser(False)
-                ElseIf TargetVersion = "SQL Server 2017" Then
-                    SqlParser = New TSql140Parser(False)
-                ElseIf TargetVersion = "SQL Server 2019" Then
-                    SqlParser = New TSql150Parser(False)
-                Else
-                    SqlParser = New TSql140Parser(False)
+                'nothing is selected
+                If String.IsNullOrEmpty(OldStr) Then
+                    Return
                 End If
 
-                Dim parseErrors As IList(Of ParseError) = New List(Of ParseError)
-                Dim result As TSqlFragment = SqlParser.Parse(New StringReader(OldStr), parseErrors)
+                Dim Result As String = ""
 
-                If parseErrors.Count > 0 Then
+                If SettingManager.GetSQLParserType() = False Then
+                    Result = ParseCodeViaTSQLParser(OldStr)
+                Else
+                    Dim FO = New PoorMansTSqlFormatterLib.Formatters.TSqlStandardFormatterOptions With {
+                                       .IndentString = "\t",
+                                       .SpacesPerTab = 4,
+                                       .MaxLineWidth = 999,
+                                       .ExpandCommaLists = True,
+                                       .TrailingCommas = True,
+                                       .SpaceAfterExpandedComma = False,
+                                       .ExpandBooleanExpressions = True,
+                                       .ExpandCaseStatements = True,
+                                       .ExpandBetweenConditions = False,
+                                       .BreakJoinOnSections = False,
+                                       .UppercaseKeywords = True,
+                                       .HTMLColoring = False,
+                                       .KeywordStandardization = True}
 
-                    Dim ErrorStr = ""
-                    For Each StrError In parseErrors
-                        ErrorStr = ErrorStr + Environment.NewLine + StrError.Message
-                    Next
+                    Dim formatter = New PoorMansTSqlFormatterLib.Formatters.TSqlStandardFormatter(FO)
+                    Dim formatMgr = New PoorMansTSqlFormatterLib.SqlFormattingManager(formatter)
 
-                    Throw New System.Exception("TSqlParser unable format selected T-SQL due to a syntax error." + Environment.NewLine + ErrorStr)
-
+                    Result = formatMgr.Format(OldStr)
                 End If
 
                 selection.Delete()
 
-                Dim StrAdd2 = ""
-                Dim Gen As SqlScriptGenerator = Nothing
-
-                If TargetVersion = "SQL Server 2008" Then
-                    Gen = New Sql100ScriptGenerator
-                ElseIf TargetVersion = "SQL Server 2012" Then
-                    Gen = New Sql110ScriptGenerator
-                ElseIf TargetVersion = "SQL Server 2014" Then
-                    Gen = New Sql120ScriptGenerator
-                ElseIf TargetVersion = "SQL Server 2016" Then
-                    Gen = New Sql130ScriptGenerator
-                ElseIf TargetVersion = "SQL Server 2017" Then
-                    Gen = New Sql140ScriptGenerator
-                ElseIf TargetVersion = "SQL Server 2019" Then
-                    Gen = New Sql150ScriptGenerator
-                Else
-                    Gen = New Sql140ScriptGenerator
-                End If
-
-                Gen.Options.IncludeSemicolons = False
-                Gen.Options.AlignClauseBodies = False
-                Gen.GenerateScript(result, StrAdd2)
-
-                selection.Insert(StrAdd2.Trim)
+                selection.Insert(Result)
 
             Catch ex As Exception
                 System.Windows.MessageBox.Show(ex.Message)
             End Try
-
 
         End If
 
