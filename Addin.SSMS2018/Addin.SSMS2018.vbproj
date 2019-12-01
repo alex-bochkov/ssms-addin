@@ -191,7 +191,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources\CommandAddin.png" />
-    <None Include="Resources\sql-file-format.ico" />
+    <None Include="Resources\sql-file-format.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Resources\sql-icon.png" />
     <Content Include="Resources\ToolWindow1Command.png" />
   </ItemGroup>
   <ItemGroup>

@@ -7,12 +7,16 @@ Imports System.Runtime.InteropServices
 ' set of attributes. Change these attribute values to modify the information
 ' associated with an assembly.
 <Assembly: AssemblyTitle("DBA-Helper.SSMS2018")>
-<Assembly: AssemblyDescription("Need SQL Server help with a large db? 
+<Assembly: AssemblyDescription("This tool is opensource and free!
+Please submit your feedback / ideas / found issues at github - https://github.com/alekseybochkov/ssms-addin/
+
+---
+Need SQL Server help with a large db? 
 Contact me at albochkov03@gmail.com!")>
 <Assembly: AssemblyConfiguration("")>
-<Assembly: AssemblyCompany("")>
+<Assembly: AssemblyCompany("https://github.com/alekseybochkov/")>
 <Assembly: AssemblyProduct("DBA-Helper.SSMS2018")>
-<Assembly: AssemblyCopyright("Alexey Bochkov")>
+<Assembly: AssemblyCopyright("Alex Bochkov")>
 <Assembly: AssemblyTrademark("")>
 <Assembly: AssemblyCulture("")>
 

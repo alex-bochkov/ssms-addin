@@ -56,7 +56,7 @@
         <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1" />
         <Icon guid="guidImages1" id="bmpPic1" />
         <Strings>
-          <ButtonText>SSMS2018 Addin (C) Alex Bochkov</ButtonText>
+          <ButtonText>DBA Helper © Alex Bochkov</ButtonText>
         </Strings>
       </Button>
     </Buttons>

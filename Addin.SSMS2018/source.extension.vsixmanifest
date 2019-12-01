@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="SSMS2018Addin.00b4c103-c834-4ba1-b29f-7464c6d5c3c2" Version="1.0" Language="en-US" Publisher="Alex Bochkov" />
-        <DisplayName>SSMS2018Addin</DisplayName>
-        <Description>Empty VSIX Project.</Description>
+        <Identity Id="DBAHelper.SSMS2018.00b4c103-c834-4ba1-b29f-7464c6d5c3c2" Version="2.0" Language="en-US" Publisher="Alex Bochkov" />
+        <DisplayName>DBA-Helper.SSMS2018</DisplayName>
+        <Description xml:space="preserve">SQL Server Management Studio 2018 Productivity ToolProducti</Description>
     </Metadata>
     <Installation>
         <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.0, 17.0)" />
@@ -17,6 +17,6 @@
     </Prerequisites>
     <Assets>
         <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
-      <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
-  </Assets>
+        <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
+    </Assets>
 </PackageManifest>

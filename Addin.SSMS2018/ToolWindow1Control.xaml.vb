@@ -103,7 +103,7 @@ Partial Public Class ToolWindow1Control
 
         AddFiles()
 
-        System.Windows.MessageBox.Show("Templates have been refreshed!")
+        System.Windows.MessageBox.Show("The template list has been refreshed!")
 
     End Sub
 
@@ -113,20 +113,28 @@ Partial Public Class ToolWindow1Control
 
             Dim FileName As String = sender.ToolTip
 
-            Dim FileContent = My.Computer.FileSystem.ReadAllText(FileName)
+            If My.Computer.FileSystem.FileExists(FileName) Then
 
-            Dim dte As DTE = TryCast(Package.GetGlobalService(GetType(DTE)), DTE)
+                Dim FileContent = My.Computer.FileSystem.ReadAllText(FileName)
 
-            Dim selection As TextSelection = DirectCast(dte.ActiveDocument.Selection, TextSelection)
+                Dim dte As DTE = TryCast(Package.GetGlobalService(GetType(DTE)), DTE)
 
-            selection.Delete()
+                If Not dte.ActiveDocument Is Nothing Then
 
-            selection.Insert(FileContent.Trim)
+                    Dim selection As TextSelection = DirectCast(dte.ActiveDocument.Selection, TextSelection)
+
+                    selection.Delete()
+
+                    selection.Insert(FileContent.Trim)
+
+                End If
+            Else
+                System.Windows.MessageBox.Show("File " + FileName + " doesn't exist!")
+            End If
 
         Catch ex As Exception
             System.Windows.MessageBox.Show(ex.Message)
         End Try
-
 
 
     End Sub
@@ -146,11 +154,6 @@ Partial Public Class ToolWindow1Control
 
     End Sub
 
-    Private Sub ComboBox_SelectionChanged(sender As Object, e As System.Windows.Controls.SelectionChangedEventArgs)
-
-    End Sub
-
-
 
     Private Sub FormatSelection()
 
@@ -169,18 +172,18 @@ Partial Public Class ToolWindow1Control
 
                 Dim SqlParser As TSqlParser = Nothing
 
-                Dim TargetVersion As String = "2019" 'SettingManager.GetTSQLFormatVersion()
-                If TargetVersion = "2008" Then
+                Dim TargetVersion As String = SettingManager.GetSQLParserVersion()
+                If TargetVersion = "SQL Server 2008" Then
                     SqlParser = New TSql100Parser(False)
-                ElseIf TargetVersion = "2012" Then
+                ElseIf TargetVersion = "SQL Server 2012" Then
                     SqlParser = New TSql110Parser(False)
-                ElseIf TargetVersion = "2014" Then
+                ElseIf TargetVersion = "SQL Server 2014" Then
                     SqlParser = New TSql120Parser(False)
-                ElseIf TargetVersion = "2016" Then
+                ElseIf TargetVersion = "SQL Server 2016" Then
                     SqlParser = New TSql130Parser(False)
-                ElseIf TargetVersion = "2017" Then
+                ElseIf TargetVersion = "SQL Server 2017" Then
                     SqlParser = New TSql140Parser(False)
-                ElseIf TargetVersion = "2019" Then
+                ElseIf TargetVersion = "SQL Server 2019" Then
                     SqlParser = New TSql150Parser(False)
                 Else
                     SqlParser = New TSql140Parser(False)
@@ -205,17 +208,17 @@ Partial Public Class ToolWindow1Control
                 Dim StrAdd2 = ""
                 Dim Gen As SqlScriptGenerator = Nothing
 
-                If TargetVersion = "2008" Then
+                If TargetVersion = "SQL Server 2008" Then
                     Gen = New Sql100ScriptGenerator
-                ElseIf TargetVersion = "2012" Then
+                ElseIf TargetVersion = "SQL Server 2012" Then
                     Gen = New Sql110ScriptGenerator
-                ElseIf TargetVersion = "2014" Then
+                ElseIf TargetVersion = "SQL Server 2014" Then
                     Gen = New Sql120ScriptGenerator
-                ElseIf TargetVersion = "2016" Then
+                ElseIf TargetVersion = "SQL Server 2016" Then
                     Gen = New Sql130ScriptGenerator
-                ElseIf TargetVersion = "2017" Then
+                ElseIf TargetVersion = "SQL Server 2017" Then
                     Gen = New Sql140ScriptGenerator
-                ElseIf TargetVersion = "2019" Then
+                ElseIf TargetVersion = "SQL Server 2019" Then
                     Gen = New Sql150ScriptGenerator
                 Else
                     Gen = New Sql140ScriptGenerator

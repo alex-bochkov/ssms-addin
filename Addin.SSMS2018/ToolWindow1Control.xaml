@@ -17,9 +17,9 @@
                 <Menu Name="FileMenu" Margin="2,2,5,0">
                     <MenuItem Header="Actions" Name="FileMenuActions">
                         <MenuItem Header="Format Selection" Click="button1_Click"/>
-                        <MenuItem Header="Setting" Click="buttonSetting_Click">
+                        <MenuItem Header="Setting" Click="buttonSetting_Click" >
                             <MenuItem.Icon>
-                                <Image Source="pack://siteoforigin:,,,/Resources/sql-file-format.ico" />
+                                <Image Source="Resources/sql-icon.png" />
                             </MenuItem.Icon>
                         </MenuItem>
                     </MenuItem>

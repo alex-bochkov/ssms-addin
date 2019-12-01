@@ -15,38 +15,29 @@ Namespace SettingManager
 
         End Function
 
+        Private Function GetRegisterValue(Parameter As String) As String
 
-        Function GetTemplatesFolder() As String
-
-            Dim Folder As String = ""
+            Dim RegisterValue As String = ""
 
             Try
 
                 Dim RootKey = GetRoot()
 
-                Folder = RootKey.GetValue("ScriptTemplatesFolder").ToString
+                RegisterValue = RootKey.GetValue(Parameter).ToString
 
             Catch ex As Exception
             End Try
 
-            If String.IsNullOrEmpty(Folder) Then
-
-                Folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "dba-helper-scripts")
-
-            End If
-
-
-            Return Folder
+            Return RegisterValue
 
         End Function
-
-        Function SaveTemplatesFolder(Folder As String) As Boolean
+        Private Function SaveRegisterValue(ParameterName As String, ParameterValue As String) As Boolean
 
             Try
 
                 Dim RootKey = GetRoot()
 
-                RootKey.SetValue("ScriptTemplatesFolder", Folder)
+                RootKey.SetValue(ParameterName, ParameterValue)
                 RootKey.Close()
 
             Catch ex As Exception
@@ -54,6 +45,50 @@ Namespace SettingManager
             End Try
 
             Return True
+
+        End Function
+
+        '***********************************************************************************
+
+        Function GetTemplatesFolder() As String
+
+            Dim Folder As String = GetRegisterValue("ScriptTemplatesFolder")
+
+            If String.IsNullOrEmpty(Folder) Then
+
+                Folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "dba-helper-scripts")
+
+            End If
+
+            Return Folder
+
+        End Function
+
+        Function GetSQLParserVersion() As String
+
+            Dim TSQLParserVersion As String = GetRegisterValue("TSQLParserVersion")
+
+            If String.IsNullOrEmpty(TSQLParserVersion) Then
+
+                TSQLParserVersion = "SQL Server 2017" 'default value
+
+            End If
+
+            Return TSQLParserVersion
+
+        End Function
+
+
+
+        Function SaveTemplatesFolder(Folder As String) As Boolean
+
+            Return SaveRegisterValue("ScriptTemplatesFolder", Folder)
+
+        End Function
+
+        Function SaveSQLParserVersion(TSQLParserVersion As String) As Boolean
+
+            Return SaveRegisterValue("TSQLParserVersion", TSQLParserVersion)
 
         End Function
 

@@ -5,6 +5,7 @@
         InitializeComponent()
 
         TextBoxScriptFolder.Text = SettingManager.GetTemplatesFolder()
+        ComboBoxParserVersion.SelectedItem = SettingManager.GetSQLParserVersion()
 
     End Sub
 
@@ -16,9 +17,16 @@
 
     Private Sub Button1_Click(sender As Object, e As System.EventArgs) Handles Button1.Click
 
-        SettingManager.SaveTemplatesFolder(TextBoxScriptFolder.Text)
+        If Not String.IsNullOrEmpty(TextBoxScriptFolder.Text) Then
+            SettingManager.SaveTemplatesFolder(TextBoxScriptFolder.Text)
+        End If
+
+        If Not String.IsNullOrEmpty(ComboBoxParserVersion.SelectedItem) Then
+            SettingManager.SaveSQLParserVersion(ComboBoxParserVersion.SelectedItem)
+        End If
 
         Close()
 
     End Sub
+
 End Class
