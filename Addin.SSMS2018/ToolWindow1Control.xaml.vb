@@ -5,6 +5,7 @@ Imports System.Collections.Generic
 Imports System.Drawing
 Imports System.IO
 Imports System.Windows.Controls
+Imports System.Windows.Media.Imaging
 Imports EnvDTE
 Imports Microsoft.SqlServer.TransactSql.ScriptDom
 Imports Microsoft.VisualStudio.Shell
@@ -19,25 +20,37 @@ Partial Public Class ToolWindow1Control
         ' This call is required by the designer.
         InitializeComponent()
 
-        AddFiles()
+        AddFiles(False)
         ' Add any initialization after the InitializeComponent() call.
 
     End Sub
 
 
-    Function AddFiles()
+    Function AddFiles(Optional Interactive As Boolean = True)
 
-        Dim Folder = "C:\glassdoor\addin\ssms-addin\QueryTemplates"
+        FileMenuTemplates.Items.Clear()
+
+        Dim Folder = SettingManager.GetTemplatesFolder()
 
         If My.Computer.FileSystem.DirectoryExists(Folder) Then
 
             Dim i As Integer = 1
 
-            FileMenuTemplates.Items.Clear()
-
             CreateCommands(FileMenuTemplates, Folder, i)
 
+        Else
+            If Interactive Then
+                System.Windows.MessageBox.Show("Folder '" + Folder + "' doesn't exist!")
+            End If
         End If
+
+        Dim mi = New MenuItem
+        mi.Header = "Refresh This List"
+        mi.Icon = My.Resources.ResourceManager.GetObject("sql-file-format")
+
+        AddHandler mi.Click, AddressOf buttonRefresh_Click
+
+        FileMenuTemplates.Items.Add(mi)
 
     End Function
 
@@ -66,12 +79,15 @@ Partial Public Class ToolWindow1Control
 
             Dim FI = My.Computer.FileSystem.GetFileInfo(File)
 
-
+            Dim ObjImage = New System.Windows.Controls.Image
+            ObjImage.Source = New BitmapImage(New Uri("Resources/sql-file-format.ico", UriKind.Relative))
+            'ObjImage.Source = My.Resources.ResourceManager.GetObject("sql-file-format")
 
             Dim mi = New MenuItem
             mi.Header = FI.Name
             mi.ToolTip = File
-            mi.Icon = My.Resources.ResourceManager.GetObject("sql-file-format")
+            mi.Icon = ObjImage
+            'mi.Icon = My.Resources.ResourceManager.GetObject("sql-file-format")
 
             AddHandler mi.Click, AddressOf insert_template
 
@@ -220,5 +236,24 @@ Partial Public Class ToolWindow1Control
 
     End Sub
 
+    Private Sub buttonHelp_Click(sender As Object, e As System.Windows.RoutedEventArgs)
+
+        Dim AboutBoxForm = New AboutBox
+
+        AboutBoxForm.ShowDialog()
+
+        AboutBoxForm.Dispose()
+
+    End Sub
+
+    Private Sub buttonSetting_Click(sender As Object, e As System.Windows.RoutedEventArgs)
+
+        Dim SettingFormForm = New SettingForm
+
+        SettingFormForm.ShowDialog()
+
+        SettingFormForm.Dispose()
+
+    End Sub
 
 End Class

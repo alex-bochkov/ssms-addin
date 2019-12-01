@@ -6,12 +6,13 @@ Imports System.Runtime.InteropServices
 ' General Information about an assembly is controlled through the following 
 ' set of attributes. Change these attribute values to modify the information
 ' associated with an assembly.
-<Assembly: AssemblyTitle("SSMS2018Addin")>
-<Assembly: AssemblyDescription("")>
+<Assembly: AssemblyTitle("DBA-Helper.SSMS2018")>
+<Assembly: AssemblyDescription("Need SQL Server help with a large db? 
+Contact me at albochkov03@gmail.com!")>
 <Assembly: AssemblyConfiguration("")>
 <Assembly: AssemblyCompany("")>
-<Assembly: AssemblyProduct("SSMS2018Addin")>
-<Assembly: AssemblyCopyright("")>
+<Assembly: AssemblyProduct("DBA-Helper.SSMS2018")>
+<Assembly: AssemblyCopyright("Alexey Bochkov")>
 <Assembly: AssemblyTrademark("")>
 <Assembly: AssemblyCulture("")>
 
@@ -30,5 +31,5 @@ Imports System.Runtime.InteropServices
 ' You can specify all the values or you can default the Build and Revision Numbers 
 ' by using the '*' as shown below:
 ' [assembly: AssemblyVersion("1.0.*")]
-<Assembly: AssemblyVersion("1.0.0.0")>
-<Assembly: AssemblyFileVersion("1.0.0.0")>
+<Assembly: AssemblyVersion("2.0.0.0")>
+<Assembly: AssemblyFileVersion("2.0.0.0")>
