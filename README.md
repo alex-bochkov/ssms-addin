@@ -1,5 +1,5 @@
 <h2>Addin for SQL Server Management Studio 2018</h2>
-<p>Work in progress...</p>
+<p>Work in progress... I had to make it as an "ugly" tool window because I couldn't figure out how to make a dynamic menu for in a toolbox.</p>
 <ul>
   <li>Format selected TSQL code with internal SQL Server parser or Poor Man's SQL Formatter</li>
   <li>Quick access to code templates</li>
