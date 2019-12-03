@@ -11,7 +11,8 @@ SELECT ec.client_net_address,
        es.[host_name],
        es.login_name,
        DB_NAME(es.database_id) as DatabaseName,
-       COUNT(ec.session_id) AS [connection count]
+       COUNT(ec.session_id) AS [connection count],
+       SUM(CASE WHEN encrypt_option = 'TRUE' THEN 1 ELSE 0 END) AS [connection count (enc)]
 FROM sys.dm_exec_sessions AS es WITH (NOLOCK)
      INNER JOIN
      sys.dm_exec_connections AS ec WITH (NOLOCK)
