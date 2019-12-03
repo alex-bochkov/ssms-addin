@@ -1,4 +1,4 @@
-<h2>Addin for SQL Server Management Studio 2018</h2>
+<h2>SQL Server Management Studio 2018 Productivity Tool (Addin)</h2>
 <p>Work in progress... I had to make it as an "ugly" toolbox window because I couldn't figure out how to make a dynamic menu in a toolbar.</p>
 <ul>
   <li>Format selected TSQL code with internal SQL Server parser or Poor Man's SQL Formatter</li>
