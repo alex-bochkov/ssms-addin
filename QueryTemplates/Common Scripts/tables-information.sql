@@ -82,5 +82,7 @@ FROM RowsStatistics AS RS
      LEFT OUTER JOIN
      TableSizes AS TS
      ON TS.ObjectId = TI.ObjectId
+WHERE 1 = 1
+     --AND rs.TableName = 'tableName'
 ORDER BY TS.UsedSpaceMB DESC;
 
