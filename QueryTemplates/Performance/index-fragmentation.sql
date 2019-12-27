@@ -25,4 +25,4 @@ GROUP BY dbschemas.[name],
 	dbindexes.[name],
 	indexstats.partition_number,
 	dbindexes.data_space_id
-ORDER BY avg_fragmentation_in_percent DESC
+ORDER BY AVG(indexstats.avg_fragmentation_in_percent) DESC
