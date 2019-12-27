@@ -1,6 +1,6 @@
 -- Enter the file name you want to shrink and target file size
--- File will be shrinked in a loop by one gigabate at a time
-DECLARE @FileName VARCHAR(100)  = 'Ff_ppbAdOrderAccumulatedDeliveredClickStats201711';
+-- File will be shrinked in a loop by one gigabyte at a time
+DECLARE @FileName VARCHAR(100)  = 'file_name';
 DECLARE @DesiredSize INT        = 30000;
 
 DECLARE @CurrentSize INT;
