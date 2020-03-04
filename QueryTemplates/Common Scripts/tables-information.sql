@@ -83,6 +83,8 @@ FROM RowsStatistics AS RS
      TableSizes AS TS
      ON TS.ObjectId = TI.ObjectId
 WHERE 1 = 1
-     --AND rs.TableName = 'tableName'
+     --AND rs.TableName IN ('','')
+     --AND rs.SchemaName = ''
+     --AND RS.RowsCount > 0
 ORDER BY TS.UsedSpaceMB DESC;
 
