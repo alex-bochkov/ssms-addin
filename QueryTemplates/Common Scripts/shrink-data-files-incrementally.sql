@@ -1,10 +1,10 @@
 -- Enter the file name you want to shrink and target file size
 -- File will be shrinked in a loop by one gigabyte at a time
 DECLARE @FileName VARCHAR(100)  = 'file_name';
-DECLARE @DesiredSize INT        = 30000;
+DECLARE @DesiredSize BIGINT        = 30000;
 
-DECLARE @CurrentSize INT;
-SELECT @CurrentSize = ROUND(size * 8 / 1024, -3) FROM sys.database_files WHERE name = @FileName
+DECLARE @CurrentSize BIGINT;
+SELECT @CurrentSize = ROUND(CAST(size AS BIGINT) * 8 / 1024, -3) FROM sys.database_files WHERE name = @FileName
 
 WHILE (@CurrentSize > @DesiredSize)
 BEGIN
