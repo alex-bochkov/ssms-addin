@@ -47,3 +47,31 @@ ORDER BY
       ObjectName,
       IndexID,
       PartitionNumber;
+
+
+
+
+--non-partitioned tables/indexes
+SELECT
+      SCHEMA_NAME(o.schema_id)    AS SchemaName,
+      OBJECT_NAME(p.object_id)    AS ObjectName,
+      i.name                      AS IndexName,
+      p.index_id                  AS IndexID,
+      p.partition_number          AS PartitionNumber,
+      fg.name                     AS FileGroupName,  
+      p.[rows]                    AS Rows,
+      p.[data_compression_desc]   AS [Compression]
+FROM sys.partitions     AS p
+JOIN sys.indexes        AS i
+      ON i.object_id = p.object_id
+      AND i.index_id = p.index_id
+JOIN sys.data_spaces    AS ds
+      ON ds.data_space_id = i.data_space_id
+JOIN sys.filegroups           AS fg
+      ON fg.data_space_id = i.data_space_id
+WHERE
+      OBJECTPROPERTY(p.object_id, 'ISMSShipped') = 0
+ORDER BY
+      ObjectName,
+      IndexID,
+      PartitionNumber;
