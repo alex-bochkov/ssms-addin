@@ -65,6 +65,8 @@ FROM sys.partitions     AS p
 JOIN sys.indexes        AS i
       ON i.object_id = p.object_id
       AND i.index_id = p.index_id
+JOIN sys.tables		AS o
+	ON i.object_id = o.object_id
 JOIN sys.data_spaces    AS ds
       ON ds.data_space_id = i.data_space_id
 JOIN sys.filegroups           AS fg
