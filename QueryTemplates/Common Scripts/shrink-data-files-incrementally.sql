@@ -6,7 +6,7 @@ DECLARE @DesiredSize BIGINT        = 30000;
 DECLARE @CurrentSize BIGINT;
 SELECT @CurrentSize = ROUND(CAST(size AS BIGINT) * 8 / 1024, -3) FROM sys.database_files WHERE name = @FileName
 
-WHILE (@CurrentSize > @DesiredSize)
+WHILE (@CurrentSize >= @DesiredSize)
 BEGIN
 
   SET LOCK_TIMEOUT 5000; -- this supposed to help against heavy blocking (but I don't think it works)
