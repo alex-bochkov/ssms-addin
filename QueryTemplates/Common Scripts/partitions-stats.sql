@@ -1,19 +1,17 @@
 --paritioned table and index details
---paritioned table and index details
 SELECT
       SCHEMA_NAME(o.schema_id) AS SchemaName,
       OBJECT_NAME(p.object_id) AS ObjectName,
-      i.[name]                 AS IndexName,
+      i.name                   AS IndexName,
       p.index_id               AS IndexID,
-      ds.name                  AS PartitionScheme,   
+      --ds.name                  AS PartitionScheme,   
+      --pf.name                  AS PartitionFunction,  
       p.partition_number       AS PartitionNumber,
-      fg.name                  AS FileGroupName,
+      --fg.name                  AS FileGroupName,
       prv_left.value           AS LowerBoundaryValue,
       prv_right.value          AS UpperBoundaryValue,
-      CASE pf.boundary_value_on_right
-            WHEN 1 THEN 'RIGHT'
-            ELSE 'LEFT' END    AS Range,
-      FORMAT(p.[rows], 'N0') AS [Rows],
+      --CASE pf.boundary_value_on_right WHEN 1 THEN 'RIGHT' ELSE 'LEFT' END AS [Range],
+      FORMAT(p.rows, 'N0')	   AS [Rows],
       p.[data_compression_desc] AS [Compression]
 FROM sys.partitions                  AS p
 JOIN sys.indexes                     AS i ON i.object_id = p.object_id AND i.index_id = p.index_id
@@ -26,12 +24,11 @@ JOIN sys.filegroups                  AS fg ON fg.data_space_id = dds2.data_space
 LEFT JOIN sys.partition_range_values AS prv_left ON ps.function_id = prv_left.function_id AND prv_left.boundary_id = p.partition_number - 1
 LEFT JOIN sys.partition_range_values AS prv_right ON ps.function_id = prv_right.function_id  AND prv_right.boundary_id = p.partition_number 
 WHERE
-      OBJECTPROPERTY(p.object_id, 'ISMSShipped') = 0
-      AND p.index_id = 1 /* only show clustered index */
+      p.index_id = 1 /* only show clustered index */
       --AND OBJECT_NAME(p.object_id) = ''
       --AND i.[name] = ''
       --AND p.partition_number = 0
-      --AND p.[rows] > 0
+	  --AND p.[rows] > 0
 ORDER BY
       ObjectName, IndexID, PartitionNumber
 
