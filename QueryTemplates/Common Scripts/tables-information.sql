@@ -54,7 +54,9 @@ AS (SELECT object_id AS ObjectID,
            MAX(last_user_update) AS [LastUserUpdate],
            MAX(last_user_seek) AS [LastUserSeek],
            MAX(last_user_scan) AS [LastUserScan],
-           MAX(last_user_lookup) AS [LastUserLookup]
+           MAX(last_user_lookup) AS [LastUserLookup],
+           SUM(user_seeks + user_scans + user_lookups) AS [TotalReads],
+           SUM(user_updates) AS [TotalWrites]
     FROM sys.dm_db_index_usage_stats
     WHERE database_id = DB_ID()
     GROUP BY object_id)
@@ -71,6 +73,8 @@ SELECT DB_NAME() AS DatabaseName,
        TI.is_replicated,
        L.[LastUserUpdate] AS LastWrite,
        COALESCE (L.LastUserScan, L.LastUserSeek, L.LastUserLookup) AS LastRead,
+       L.TotalReads,
+       L.TotalWrites,
        RS.Create_date as CreateDate
 FROM RowsStatistics AS RS
      FULL OUTER JOIN
