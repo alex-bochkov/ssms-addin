@@ -1,4 +1,5 @@
-SELECT CONCAT(s.name, '.', t.name) AS TableName,
+SELECT DB_NAME() as DatabaseName,
+       CONCAT(s.name, '.', t.name) AS TableName,
        c.name AS ColumnName,
        ty.Name + '(' + CAST (c.max_length AS VARCHAR (10)) + ')' AS ColumnType,
        cmk.[name] AS CMK_name,
