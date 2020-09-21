@@ -4,6 +4,7 @@ SELECT DB_NAME() as DatabaseName,
        ty.Name + '(' + CAST (c.max_length AS VARCHAR (10)) + ')' AS ColumnType,
        cmk.[name] AS CMK_name,
        cmk.create_date AS CMK_createDate,
+	   cmk.[key_path] as CMK_path, 
        k.[name] AS CEK_name,
        c.encryption_type_desc
 FROM sys.columns AS c
