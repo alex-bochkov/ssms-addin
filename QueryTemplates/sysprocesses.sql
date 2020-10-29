@@ -1,11 +1,3 @@
-SELECT hostname,
-       db_name(dbid) AS DatabaseName,
-       loginame,
-       count(*) AS ConnectionCount
-FROM sys.sysprocesses
-GROUP BY hostname, db_name(dbid), loginame
-ORDER BY 2;
-
 SELECT ec.client_net_address,
        es.[program_name],
        es.[host_name],
@@ -17,6 +9,10 @@ FROM sys.dm_exec_sessions AS es WITH (NOLOCK)
      INNER JOIN
      sys.dm_exec_connections AS ec WITH (NOLOCK)
      ON es.session_id = ec.session_id
+WHERE 1 = 1
+	-- AND es.[program_name] LIKE '%%'
+	-- AND DB_NAME(es.database_id) = ''
+       -- AND es.[host_name] LIKE '%%'
 GROUP BY ec.client_net_address, es.[program_name], es.[host_name], es.login_name, DB_NAME(es.database_id)
 ORDER BY ec.client_net_address, es.[program_name]
 OPTION (RECOMPILE);
