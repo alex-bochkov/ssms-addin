@@ -24,6 +24,8 @@ BEGIN
 	SET @DateString = FORMAT(@Date, 'yyyyMMdd')
  
 	SET @Cmd = '
+USE [DATABASENAME];
+GO
 ALTER DATABASE [DATABASENAME] ADD FILEGROUP [FG_TABLENAME' + @DateString + ']
 ALTER DATABASE [DATABASENAME] ADD FILE   (NAME = ''F_TABLENAME' + @DateString + ''',
               FILENAME = ''X:\Databases\DATABASENAME\F_TABLENAME' + @DateString + '.ndf'',
