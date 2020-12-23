@@ -5,6 +5,7 @@ SELECT dbschemas.[name] as 'Schema',
 	indexstats.partition_number,
 	FORMAT(AVG(indexstats.avg_fragmentation_in_percent), 'N2') AS avg_fragmentation_in_percent,
 	FORMAT(SUM(indexstats.page_count), 'N0') AS page_count,
+	FORMAT(SUM(indexstats.page_count * 8 / 1024), 'N0') AS index_size_mb,
 	'ALTER INDEX ['+dbindexes.[name]+'] ON [' + dbschemas.name + '].['+dbtables.[name]+'] REORGANIZE PARTITION = ' 
 		+ CASE WHEN EXISTS(SELECT TOP 1 1 FROM sys.partition_schemes s WHERE s.data_space_id = dbindexes.data_space_id) 
 			THEN CAST(indexstats.partition_number AS VARCHAR(3)) ELSE 'ALL' END + ';' AS CmdReorg,
