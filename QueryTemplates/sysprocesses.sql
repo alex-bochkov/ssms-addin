@@ -18,5 +18,7 @@ WHERE 1 = 1
 GROUP BY 
      GROUPING SETS((), --totals
           (ec.client_net_address, es.[program_name], es.[host_name], es.login_name, ec.local_net_address, DB_NAME(es.database_id)))
-ORDER BY ec.client_net_address, es.[program_name]
+ORDER BY 
+     ec.client_net_address, es.[program_name]
+     -- [connection count] DESC
 OPTION (RECOMPILE);
