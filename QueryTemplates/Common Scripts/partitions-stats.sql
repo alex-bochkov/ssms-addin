@@ -26,9 +26,10 @@ LEFT JOIN sys.partition_range_values AS prv_right ON ps.function_id = prv_right.
 WHERE
       p.index_id = 1 /* only show clustered index */
       --AND OBJECT_NAME(p.object_id) = ''
+      --AND SCHEMA_NAME(o.schema_id) = ''
       --AND i.[name] = ''
       --AND p.partition_number = 0
-	  --AND p.[rows] > 0
+      --AND p.[rows] > 0
 ORDER BY
       ObjectName, IndexID, PartitionNumber
 
