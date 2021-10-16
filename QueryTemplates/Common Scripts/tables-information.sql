@@ -50,16 +50,26 @@ AS (SELECT NAME,
     FROM sys.tables AS T
     WHERE is_ms_shipped = 0),
  LastReadWrites
-AS (SELECT object_id AS ObjectID,
-           MAX(last_user_update) AS [LastUserUpdate],
-           MAX(last_user_seek) AS [LastUserSeek],
-           MAX(last_user_scan) AS [LastUserScan],
-           MAX(last_user_lookup) AS [LastUserLookup],
-           SUM(user_seeks + user_scans + user_lookups) AS [TotalReads],
-           SUM(user_updates) AS [TotalWrites]
-    FROM sys.dm_db_index_usage_stats
-    WHERE database_id = DB_ID()
-    GROUP BY object_id)
+AS (SELECT ObjectID AS ObjectID,
+       MAX([LastUserUpdate]) AS [LastUserUpdate],
+       MAX([LastUserSeek]) AS [LastUserSeek],
+       MAX([LastUserScan]) AS [LastUserScan],
+       MAX([LastUserLookup]) AS [LastUserLookup],
+       MAX([LastUserRead]) AS [LastUserRead],
+       SUM([TotalReads]) AS [TotalReads],
+       SUM([TotalWrites]) AS [TotalWrites]
+FROM (SELECT object_id AS ObjectID,
+             (last_user_update) AS [LastUserUpdate],
+             (last_user_seek) AS [LastUserSeek],
+             (last_user_scan) AS [LastUserScan],
+             (last_user_lookup) AS [LastUserLookup],
+             (user_seeks + user_scans + user_lookups) AS [TotalReads],
+             (user_updates) AS [TotalWrites],
+             (SELECT Max(v)
+              FROM (VALUES (last_user_seek), (last_user_scan), (last_user_lookup)) AS value(v)) AS [LastUserRead]
+      FROM sys.dm_db_index_usage_stats
+      WHERE database_id = DB_ID()) AS a
+GROUP BY ObjectID)
 SELECT DB_NAME() AS DatabaseName,
        rs.SchemaName,
        rs.TableName,
@@ -71,8 +81,8 @@ SELECT DB_NAME() AS DatabaseName,
        TI.HasClusteredIndex,
        TI.PKisClustered,
        TI.is_replicated,
-       L.[LastUserUpdate] AS LastWrite,
-       COALESCE (L.LastUserScan, L.LastUserSeek, L.LastUserLookup) AS LastRead,
+       L.LastUserUpdate AS LastWrite,
+       L.LastUserRead AS LastRead,
        L.TotalReads,
        L.TotalWrites,
        RS.Create_date as CreateDate
