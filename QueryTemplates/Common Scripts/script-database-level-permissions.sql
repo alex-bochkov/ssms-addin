@@ -222,11 +222,12 @@ BEGIN
 				, maj_ID		NVARCHAR(128)
 				, name			NVARCHAR(128)	
 				, pr_name		NVARCHAR(128)
+				, column_name	NVARCHAR(128)
 				)
 		
 		DECLARE @state_desc VARCHAR(60)
 		DECLARE @perm_name NVARCHAR(128), @sch_name NVARCHAR(128), @maj_ID NVARCHAR(128)
-		DECLARE @name NVARCHAR(128), @pr_name NVARCHAR(128)		
+		DECLARE @name NVARCHAR(128), @pr_name NVARCHAR(128), @column_name NVARCHAR(128)		
 					
 		INSERT INTO #objgrants
 		SELECT CASE dbpe.[state] WHEN 'W' THEN 'GRANT'
@@ -238,6 +239,11 @@ BEGIN
 		, dbpr.name AS name
 		, CASE dbpe.[state] WHEN 'W' THEN '] WITH GRANT OPTION'
 		ELSE ']' END AS pr_name
+		, ISNULL((select al.name as ColumnName from sys.database_permissions dp
+		inner join sys.all_columns al
+		on dp.minor_id = al.column_id
+		and al.object_id = dbpe.major_id
+		where dp.major_id = dbpe.major_id and dp.minor_id > 0 and  dbpe.minor_id = dp.minor_id and dp.class_desc = 'OBJECT_OR_COLUMN'), '') as ColumnName
 		FROM sys.database_permissions dbpe INNER JOIN sys.database_principals dbpr 
 		ON dbpr.principal_id = dbpe.grantee_principal_id
 		INNER JOIN sys.objects obj ON dbpe.major_id = obj.object_id
@@ -245,22 +251,23 @@ BEGIN
 		WHERE obj.type NOT IN ('IT','S','X') 
 			AND (dbpr.name in (SELECT F.userName FROM #FilterByUsers F) OR (SELECT COUNT(*) FROM #FilterByUsers) = 0)
 		ORDER BY dbpr.name, obj.name
-			
+
 		WHILE (SELECT COUNT(*) FROM #objgrants) > 0
 		BEGIN
 			
 			SELECT TOP 1 @state_desc = state_desc, @perm_name = perm_name, @sch_name = sch_name, 
-			@maj_ID = maj_ID, @name = name, @pr_name = pr_name FROM #objgrants
+			@maj_ID = maj_ID, @name = name, @pr_name = pr_name, @column_name = column_name FROM #objgrants
 			
 			INSERT INTO #AllPermissions ([codeSQL]) 
 			SELECT @state_desc + ' ' + @perm_name +
-				' ON [' + @sch_name + '].[' + @maj_ID + '] TO [' + @name + @pr_name
+				' ON [' + @sch_name + '].[' + @maj_ID + ']' + CASE WHEN @column_name = '' THEN '' ELSE CONCAT('(', @column_name, ')') END + ' TO [' + @name + @pr_name
 		
 			DELETE FROM #objgrants WHERE state_desc = @state_desc AND perm_name = @perm_name 
-				AND sch_name = @sch_name AND maj_ID = @maj_ID AND name = @name AND pr_name = @pr_name
+				AND sch_name = @sch_name AND maj_ID = @maj_ID AND name = @name AND pr_name = @pr_name AND column_name = @column_name
 			 
 		END
 	DROP TABLE #objgrants
+	
 END
 		
 
