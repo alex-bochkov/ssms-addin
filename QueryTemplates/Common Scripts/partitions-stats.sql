@@ -6,6 +6,7 @@ SELECT
       p.index_id               AS IndexID,
       --ds.name                  AS PartitionScheme,   
       --pf.name                  AS PartitionFunction,  
+      --CONCAT('ALTER PARTITION FUNCTION ', pf.name, '() MERGE RANGE (''', cast(prv_left.value as datetime), ''')') AS PartitionFunctionMerge
       p.partition_number       AS PartitionNumber,
       --fg.name                  AS FileGroupName,
       prv_left.value           AS LowerBoundaryValue,
