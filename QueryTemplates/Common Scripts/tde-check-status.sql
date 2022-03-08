@@ -19,3 +19,4 @@ SELECT
   encryptor_thumbprint,
   encryptor_type 
 FROM sys.dm_database_encryption_keys a
+ORDER BY DatabaseName
