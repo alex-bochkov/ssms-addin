@@ -4,6 +4,8 @@
 
 DROP TABLE IF EXISTS #AllPermissions;
 DROP TABLE IF EXISTS #FilterByUsers;
+DROP TABLE IF EXISTS #Users;
+
 
 CREATE TABLE #AllPermissions (id int IDENTITY(1,1), [codeSQL] varchar(1024));
 CREATE TABLE #FilterByUsers (userName varchar(64));
@@ -38,7 +40,7 @@ END
 --Script the database users
 --======================================================
 SELECT principal_id INTO #users FROM sys.database_principals WHERE type IN ('U', 'G', 'S') AND principal_id > 4
-	AND (name in (SELECT F.userName FROM #FilterByUsers F) OR (SELECT COUNT(*) FROM #FilterByUsers) = 0);
+	AND (name COLLATE Latin1_General_CI_AS in (SELECT F.userName FROM #FilterByUsers F) OR (SELECT COUNT(*) FROM #FilterByUsers) = 0);
 
 IF (SELECT COUNT(*) FROM #users) = 0
 BEGIN
@@ -193,7 +195,7 @@ BEGIN
 	FROM sys.database_permissions dpm INNER JOIN sys.database_principals dp 
 		ON dpm.grantee_principal_id = dp.principal_id
 	WHERE dp.principal_id > 4 AND dpm.class = 0 --AND dpm.type = 'CO'
-		AND (dp.name in (SELECT F.userName FROM #FilterByUsers F) OR (SELECT COUNT(*) FROM #FilterByUsers) = 0)
+		AND (dp.name COLLATE Latin1_General_CI_AS in (SELECT F.userName FROM #FilterByUsers F) OR (SELECT COUNT(*) FROM #FilterByUsers) = 0)
 
 END
 
@@ -249,7 +251,7 @@ BEGIN
 		INNER JOIN sys.objects obj ON dbpe.major_id = obj.object_id
 		INNER JOIN sys.schemas sch ON obj.schema_id = sch.schema_id
 		WHERE obj.type NOT IN ('IT','S','X') 
-			AND (dbpr.name in (SELECT F.userName FROM #FilterByUsers F) OR (SELECT COUNT(*) FROM #FilterByUsers) = 0)
+			AND (dbpr.name COLLATE Latin1_General_CI_AS in (SELECT F.userName FROM #FilterByUsers F) OR (SELECT COUNT(*) FROM #FilterByUsers) = 0)
 		ORDER BY dbpr.name, obj.name
 
 		WHILE (SELECT COUNT(*) FROM #objgrants) > 0
@@ -292,7 +294,7 @@ BEGIN
 		INNER JOIN sys.database_role_members drm ON dp.principal_id = drm.role_principal_id
 		INNER JOIN sys.database_principals dp2 ON drm.member_principal_id = dp2.principal_id
 		WHERE dp2.principal_id > 4 AND dp2.type <> 'R'
-			AND (dp2.name in (SELECT F.userName FROM #FilterByUsers F) OR (SELECT COUNT(*) FROM #FilterByUsers) = 0) 
+			AND (dp2.name COLLATE Latin1_General_CI_AS in (SELECT F.userName FROM #FilterByUsers F) OR (SELECT COUNT(*) FROM #FilterByUsers) = 0) 
 
 END
 
