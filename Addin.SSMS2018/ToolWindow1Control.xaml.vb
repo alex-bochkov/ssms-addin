@@ -201,8 +201,10 @@ Partial Public Class ToolWindow1Control
             SqlParser = New TSql140Parser(False)
         ElseIf TargetVersion = "SQL Server 2019" Then
             SqlParser = New TSql150Parser(False)
+        ElseIf TargetVersion = "SQL Server 2022" Then
+            SqlParser = New TSql160Parser(False)
         Else
-            SqlParser = New TSql140Parser(False)
+            SqlParser = New TSql150Parser(False)
         End If
 
         Dim parseErrors As IList(Of ParseError) = New List(Of ParseError)
@@ -221,26 +223,33 @@ Partial Public Class ToolWindow1Control
 
 
 
-        Dim StrAdd2 = ""
         Dim Gen As SqlScriptGenerator = Nothing
 
         If TargetVersion = "SQL Server 2008" Then
             Gen = New Sql100ScriptGenerator
+            Gen.Options.SqlVersion = SqlVersion.Sql100
         ElseIf TargetVersion = "SQL Server 2012" Then
             Gen = New Sql110ScriptGenerator
+            Gen.Options.SqlVersion = SqlVersion.Sql110
         ElseIf TargetVersion = "SQL Server 2014" Then
             Gen = New Sql120ScriptGenerator
+            Gen.Options.SqlVersion = SqlVersion.Sql120
         ElseIf TargetVersion = "SQL Server 2016" Then
             Gen = New Sql130ScriptGenerator
+            Gen.Options.SqlVersion = SqlVersion.Sql130
         ElseIf TargetVersion = "SQL Server 2017" Then
             Gen = New Sql140ScriptGenerator
+            Gen.Options.SqlVersion = SqlVersion.Sql140
         ElseIf TargetVersion = "SQL Server 2019" Then
             Gen = New Sql150ScriptGenerator
+            Gen.Options.SqlVersion = SqlVersion.Sql150
+        ElseIf TargetVersion = "SQL Server 2022" Then
+            Gen = New Sql160ScriptGenerator
+            Gen.Options.SqlVersion = SqlVersion.Sql160
         Else
-            Gen = New Sql140ScriptGenerator
+            Gen = New Sql150ScriptGenerator
         End If
 
-        Gen.Options.IncludeSemicolons = False
         Gen.Options.AlignClauseBodies = False
         Gen.GenerateScript(result, ResultCode)
 

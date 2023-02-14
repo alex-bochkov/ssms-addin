@@ -8,13 +8,13 @@ Imports System.Runtime.InteropServices
 ' associated with an assembly.
 <Assembly: AssemblyTitle("DBA-Helper.SSMS2018")>
 <Assembly: AssemblyDescription("This tool is opensource and free!
-Please submit your feedback / ideas / found issues at github - https://github.com/alekseybochkov/ssms-addin/
+Please submit your feedback / ideas / found issues at github - https://github.com/alex-bochkov/ssms-addin/
 
 ---
 Need SQL Server help with a large db? 
 Contact me at albochkov03@gmail.com!")>
 <Assembly: AssemblyConfiguration("")>
-<Assembly: AssemblyCompany("https://github.com/alekseybochkov/")>
+<Assembly: AssemblyCompany("https://github.com/alex-bochkov/")>
 <Assembly: AssemblyProduct("DBA-Helper.SSMS2018")>
 <Assembly: AssemblyCopyright("Alex Bochkov")>
 <Assembly: AssemblyTrademark("")>

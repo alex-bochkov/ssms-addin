@@ -77,7 +77,7 @@ Partial Class SettingForm
         'ComboBoxParserVersion
         '
         Me.ComboBoxParserVersion.FormattingEnabled = True
-        Me.ComboBoxParserVersion.Items.AddRange(New Object() {"SQL Server 2008", "SQL Server 2012", "SQL Server 2014", "SQL Server 2016", "SQL Server 2017", "SQL Server 2019"})
+        Me.ComboBoxParserVersion.Items.AddRange(New Object() {"SQL Server 2008", "SQL Server 2012", "SQL Server 2014", "SQL Server 2016", "SQL Server 2017", "SQL Server 2019", "SQL Server 2022"})
         Me.ComboBoxParserVersion.Location = New System.Drawing.Point(136, 30)
         Me.ComboBoxParserVersion.Name = "ComboBoxParserVersion"
         Me.ComboBoxParserVersion.Size = New System.Drawing.Size(316, 21)
