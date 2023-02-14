@@ -221,7 +221,19 @@ Partial Public Class ToolWindow1Control
 
         End If
 
-
+        '---------------------------------------------------------------
+        ' This is how you can strip off all comments, but keep the format on
+        'Dim resultScript = ""
+        'For Each Item In result.ScriptTokenStream
+        '    If Item.TokenType = TSqlTokenType.MultilineComment _
+        '        Or Item.TokenType = TSqlTokenType.SingleLineComment Then
+        '        Continue For
+        '    End If
+        '    resultScript = resultScript + Item.Text
+        'Next
+        '---------------------------------------------------------------
+        ' Still need to find how to format the script and keep comments in the text 
+        '---------------------------------------------------------------
 
         Dim Gen As SqlScriptGenerator = Nothing
 
