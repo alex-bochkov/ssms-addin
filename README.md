@@ -7,7 +7,7 @@
 
 <p>.NET 4.7.2 is required.</p>
 
-<p>To install the addin unpack files from the most recent <a href="/alex-bochkov/ssms-addin/releases">release</a> into <i>C:\Program Files (x86)\Microsoft SQL Server Management Studio 18\Common7\IDE\Extensions</i> folder.</p>
+<p>To install the addin unpack files from the most recent <a href="alex-bochkov/ssms-addin/releases">release</a> into <i>C:\Program Files (x86)\Microsoft SQL Server Management Studio 18\Common7\IDE\Extensions</i> folder.</p>
 
 <img src="https://github.com/alekseybochkov/ssms-addin/blob/master/Addin.SSMS2018/pics/1.png?raw=true"/>
 <img src="https://github.com/alekseybochkov/ssms-addin/blob/master/Addin.SSMS2018/pics/2.png?raw=true"/>
