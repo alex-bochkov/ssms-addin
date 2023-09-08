@@ -31,7 +31,7 @@ AS (SELECT t.object_id AS ObjectId,
     GROUP BY t.object_id),
  TableInformation
 AS (SELECT NAME,
-           object_id AS ObjectId,
+           T.object_id AS ObjectId,
            CASE WHEN NAME IN (SELECT object_name(Parent_object_id)
                               FROM sys.objects
                               WHERE type = 'PK') THEN 1 ELSE 0 END AS HasPK,
@@ -46,8 +46,11 @@ AS (SELECT NAME,
                                                                    FROM sys.indexes AS i
                                                                    WHERE i.type_desc = 'CLUSTERED'
                                                                          AND i.object_id = T.object_id)) THEN 1 ELSE 0 END AS PKisClustered,
-           is_replicated
+           is_replicated,
+		   COALESCE(I.IndexCount, 0) as IndexCount
     FROM sys.tables AS T
+        LEFT JOIN (SELECT si.object_id, COUNT(*) as IndexCount FROM sys.indexes si GROUP BY si.object_id) I
+            ON T.object_id = I.object_id
     WHERE is_ms_shipped = 0),
  LastReadWrites
 AS (SELECT ObjectID AS ObjectID,
@@ -77,6 +80,7 @@ SELECT DB_NAME() AS DatabaseName,
        FORMAT(TS.UsedSpaceMB, 'N0') AS UsedSpaceMB,
        FORMAT(TS.UsedSpaceMB_Compressed, 'N0') AS UsedSpaceMB_Compressed,
        RS.PartitionCount,
+       TI.IndexCount,
        TI.HasPK,
        TI.HasClusteredIndex,
        TI.PKisClustered,
@@ -101,4 +105,3 @@ WHERE 1 = 1
      --AND rs.SchemaName = ''
      --AND RS.RowsCount > 0
 ORDER BY TS.UsedSpaceMB DESC;
-
