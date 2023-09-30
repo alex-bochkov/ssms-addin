@@ -1,9 +1,10 @@
 SET NOCOUNT ON;
-DECLARE @RowsStatistics AS TABLE (ObjectId INT, PartitionCount INT, RowsCount BIGINT, INDEX IDX CLUSTERED (ObjectId));
+DECLARE @RowsStatistics AS TABLE (ObjectId INT, PartitionCount INT, RowsCount BIGINT, UnusedPagesPercent INT, INDEX IDX CLUSTERED (ObjectId));
 INSERT INTO @RowsStatistics
 SELECT ps.object_id AS ObjectId,
        COUNT(DISTINCT ps.partition_number) AS PartitionCount,
-       SUM(ps.row_count) AS RowsCount
+       SUM(ps.row_count) AS RowsCount,
+       CASE WHEN SUM(ps.reserved_page_count) = 0 THEN 0 ELSE (SUM(ps.reserved_page_count) - SUM(ps.used_page_count)) * 100 / SUM(ps.reserved_page_count) END AS UnusedPagesPercent
 FROM sys.dm_db_partition_stats AS ps
      INNER JOIN sys.objects AS so ON ps.OBJECT_ID = so.object_id
 WHERE ps.index_id < 2
@@ -45,8 +46,8 @@ AS (SELECT t.object_id AS ObjectId,
     GROUP BY t.object_id),
  LastReadWrites
 AS (SELECT ObjectID AS ObjectID,
-       MAX([LastUserUpdate]) AS [LastUserUpdate],
-       MAX([LastUserRead]) AS [LastUserRead],
+       MAX([LastUserUpdate]) AS [LastWrite],
+       MAX([LastUserRead]) AS [LastRead],
        SUM([TotalReads]) AS [TotalReads],
        SUM([TotalWrites]) AS [TotalWrites]
 FROM (SELECT object_id AS ObjectID,
@@ -63,21 +64,22 @@ SELECT DB_NAME() AS DatabaseName,
        FORMAT(RS.RowsCount, 'N0') AS RowsCount,
        FORMAT(TS.UsedSpaceMB, 'N0') AS UsedSpaceMB,
        FORMAT(TS.UsedSpaceMB_Compressed, 'N0') AS UsedSpaceMB_Compressed,
+	   RS.UnusedPagesPercent,
        RS.PartitionCount,
        TI.IndexCount,
        TI.HasPK,
        TI.HasClusteredIndex,
        TI.PKisClustered,
        TI.IsReplicated,
-       L.LastUserUpdate AS LastWrite,
-       L.LastUserRead AS LastRead,
+       L.LastWrite,
+       L.LastRead,
        L.TotalReads,
        L.TotalWrites,
        ti.CreateDate
 FROM @TableInfo AS ti
 	LEFT JOIN @RowsStatistics AS RS ON RS.ObjectId = TI.ObjectId
-	LEFT JOIN LastReadWrites AS L ON L.objectId = RS.ObjectId
-	LEFT OUTER JOIN TableSizes AS TS ON TS.ObjectId = TI.ObjectId
+	LEFT JOIN LastReadWrites AS L ON L.ObjectId = RS.ObjectId
+	LEFT JOIN TableSizes AS TS ON TS.ObjectId = TI.ObjectId
 WHERE 1 = 1
      --AND ti.TableName IN ('','')
      --AND ti.SchemaName = ''
