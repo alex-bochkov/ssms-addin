@@ -35,17 +35,20 @@ FROM sys.tables AS t
      ON t.object_id = i.object_id
 WHERE t.is_ms_shipped = 0;
 
-WITH TableSizes
-AS (SELECT t.object_id AS ObjectId,
-           CAST (ROUND(((SUM(a.used_pages) * 8) / 1024.00), 2) AS NUMERIC (36, 2)) AS UsedSpaceMB,
-           CAST (ROUND(((SUM(CASE WHEN p.[data_compression] > 0 THEN a.used_pages ELSE 0 END) * 8) / 1024.00), 2) AS NUMERIC (36, 2)) AS UsedSpaceMB_Compressed
-    FROM sys.tables AS t
-         INNER JOIN sys.indexes AS i ON t.object_id = i.object_id
-         INNER JOIN sys.partitions AS p ON i.object_id = p.object_id AND i.index_id = p.index_id
-         INNER JOIN sys.allocation_units AS a ON p.partition_id = a.container_id
-    GROUP BY t.object_id),
- LastReadWrites
-AS (SELECT ObjectID AS ObjectID,
+DECLARE @TableSizes AS TABLE (ObjectId INT, UsedSpaceMB NUMERIC (36, 2), UsedSpaceMB_Compressed NUMERIC (36, 2), INDEX IDX CLUSTERED (ObjectId));
+INSERT INTO @TableSizes
+SELECT t.object_id AS ObjectId,
+        CAST (ROUND(((SUM(a.used_pages) * 8) / 1024.00), 2) AS NUMERIC (36, 2)) AS UsedSpaceMB,
+        CAST (ROUND(((SUM(CASE WHEN p.[data_compression] > 0 THEN a.used_pages ELSE 0 END) * 8) / 1024.00), 2) AS NUMERIC (36, 2)) AS UsedSpaceMB_Compressed
+FROM sys.tables AS t
+        INNER JOIN sys.indexes AS i ON t.object_id = i.object_id
+        INNER JOIN sys.partitions AS p ON i.object_id = p.object_id AND i.index_id = p.index_id
+        INNER JOIN sys.allocation_units AS a ON p.partition_id = a.container_id
+GROUP BY t.object_id;
+
+DECLARE @LastReadWrites AS TABLE (ObjectId INT, [LastWrite] DATETIME, [LastRead] DATETIME, [TotalReads] BIGINT, [TotalWrites] BIGINT, INDEX IDX CLUSTERED (ObjectId));
+INSERT INTO @LastReadWrites
+SELECT ObjectID AS ObjectID,
        MAX([LastUserUpdate]) AS [LastWrite],
        MAX([LastUserRead]) AS [LastRead],
        SUM([TotalReads]) AS [TotalReads],
@@ -57,7 +60,8 @@ FROM (SELECT object_id AS ObjectID,
              (user_seeks + user_scans + user_lookups) AS [TotalReads]
       FROM sys.dm_db_index_usage_stats
       WHERE database_id = DB_ID()) AS a
-GROUP BY ObjectID)
+GROUP BY ObjectID;
+
 SELECT DB_NAME() AS DatabaseName,
        ti.SchemaName,
        ti.TableName,
@@ -78,8 +82,8 @@ SELECT DB_NAME() AS DatabaseName,
        ti.CreateDate
 FROM @TableInfo AS ti
 	LEFT JOIN @RowsStatistics AS RS ON RS.ObjectId = TI.ObjectId
-	LEFT JOIN LastReadWrites AS L ON L.ObjectId = RS.ObjectId
-	LEFT JOIN TableSizes AS TS ON TS.ObjectId = TI.ObjectId
+	LEFT JOIN @LastReadWrites AS L ON L.ObjectId = RS.ObjectId
+	LEFT JOIN @TableSizes AS TS ON TS.ObjectId = TI.ObjectId
 WHERE 1 = 1
      --AND ti.TableName IN ('','')
      --AND ti.SchemaName = ''
