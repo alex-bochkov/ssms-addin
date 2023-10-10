@@ -15,13 +15,13 @@ INSERT INTO @TableInfo
 SELECT 
        OBJECT_SCHEMA_NAME(t.object_id) AS SchemaName,
        OBJECT_NAME(t.object_id) AS TableName,
-	   t.object_id AS ObjectId,
+       t.object_id AS ObjectId,
        i.HasPK,
        i.HasClusteredIndex,
        i.PKisClustered,
        t.is_replicated as IsReplicated,
        COALESCE (I.IndexCount, 0) AS IndexCount,
-	   t.create_date
+       t.create_date
 FROM sys.tables AS t
      LEFT OUTER JOIN
      (SELECT si.object_id,
@@ -68,7 +68,7 @@ SELECT DB_NAME() AS DatabaseName,
        FORMAT(RS.RowsCount, 'N0') AS RowsCount,
        FORMAT(TS.UsedSpaceMB, 'N0') AS UsedSpaceMB,
        FORMAT(TS.UsedSpaceMB_Compressed, 'N0') AS UsedSpaceMB_Compressed,
-	   RS.UnusedPagesPercent,
+       RS.UnusedPagesPercent,
        RS.PartitionCount,
        TI.IndexCount,
        TI.HasPK,
@@ -81,9 +81,9 @@ SELECT DB_NAME() AS DatabaseName,
        L.TotalWrites,
        ti.CreateDate
 FROM @TableInfo AS ti
-	LEFT JOIN @RowsStatistics AS RS ON RS.ObjectId = TI.ObjectId
-	LEFT JOIN @LastReadWrites AS L ON L.ObjectId = RS.ObjectId
-	LEFT JOIN @TableSizes AS TS ON TS.ObjectId = TI.ObjectId
+    LEFT JOIN @RowsStatistics AS RS ON RS.ObjectId = TI.ObjectId
+    LEFT JOIN @LastReadWrites AS L ON L.ObjectId = RS.ObjectId
+    LEFT JOIN @TableSizes AS TS ON TS.ObjectId = TI.ObjectId
 WHERE 1 = 1
      --AND ti.TableName IN ('','')
      --AND ti.SchemaName = ''
