@@ -1,3 +1,13 @@
+SELECT CONCAT('USE [', name, ']
+GO
+CREATE DATABASE ENCRYPTION KEY WITH ALGORITHM = AES_256 ENCRYPTION BY SERVER CERTIFICATE [TDE];
+GO
+ALTER DATABASE [', name, '] SET ENCRYPTION ON;
+GO
+ ')
+FROM sys.databases;
+GO
+-------------------------------------------------------------
 SELECT
   DB_NAME(database_id) AS DatabaseName,
   encryption_state,
