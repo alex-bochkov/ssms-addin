@@ -1,15 +1,5 @@
-SELECT CONCAT('USE [', name, ']
-GO
-CREATE DATABASE ENCRYPTION KEY WITH ALGORITHM = AES_256 ENCRYPTION BY SERVER CERTIFICATE [TDE];
-GO
-ALTER DATABASE [', name, '] SET ENCRYPTION ON;
-GO
- ')
-FROM sys.databases;
-GO
--------------------------------------------------------------
 SELECT
-  DB_NAME(database_id) AS DatabaseName,
+  d.[name] AS DatabaseName,
   encryption_state,
   encryption_state_desc =
   CASE encryption_state
@@ -27,6 +17,16 @@ SELECT
         FROM master.sys.certificates AS c
         WHERE c.thumbprint = a.encryptor_thumbprint),
   encryptor_thumbprint,
-  encryptor_type 
-FROM sys.dm_database_encryption_keys a
-ORDER BY DatabaseName
+  encryptor_type,
+  CONCAT('USE [', d.[name], ']
+GO
+CREATE DATABASE ENCRYPTION KEY WITH ALGORITHM = AES_256 ENCRYPTION BY SERVER CERTIFICATE [TDE];
+GO
+ALTER DATABASE [', d.[name], '] SET ENCRYPTION ON;
+GO') AS encryptCommand
+FROM sys.databases AS d
+     LEFT OUTER JOIN sys.dm_database_encryption_keys AS a
+     ON d.database_id = a.database_id
+WHERE d.source_database_id IS NULL
+	 AND d.database_id > 4
+ORDER BY DatabaseName;
