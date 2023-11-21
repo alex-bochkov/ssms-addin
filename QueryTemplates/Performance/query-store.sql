@@ -1,6 +1,7 @@
 SELECT DATEADD(hour, DATEDIFF(hour, 0, rs.first_execution_time), 0) AS first_execution,
-       sum(rs.count_executions * rs.avg_duration) / SUM(rs.count_executions) AS avg_duration,
        sum(rs.count_executions * rs.avg_duration) AS total_duration,
+       sum(rs.count_executions * rs.avg_duration) / SUM(rs.count_executions) AS avg_duration,
+       sum(rs.count_executions * rs.avg_cpu_time) / SUM(rs.count_executions) AS avg_cpu_time,
        sum(rs.count_executions * rs.avg_logical_io_reads) AS total_logical_io_reads,
        sum(rs.count_executions * rs.avg_logical_io_reads) / SUM(rs.count_executions) AS avg_logical_io_reads,
        sum(rs.count_executions * rs.avg_physical_io_reads) AS total_physical_io_reads,
