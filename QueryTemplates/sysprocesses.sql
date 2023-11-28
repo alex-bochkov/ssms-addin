@@ -3,6 +3,7 @@ SELECT ec.client_net_address,
        es.[host_name],
        es.login_name,
        ec.local_net_address,
+       ec.local_tcp_port,
        DB_NAME(es.database_id) as DatabaseName,
        COUNT(ec.session_id) AS [connection count],
        SUM(CASE WHEN encrypt_option = 'TRUE' THEN 1 ELSE 0 END) AS [connection count (enc)]
@@ -17,7 +18,7 @@ WHERE 1 = 1
 	-- AND es.login_name = ''
 GROUP BY 
      GROUPING SETS((), --totals
-          (ec.client_net_address, es.[program_name], es.[host_name], es.login_name, ec.local_net_address, DB_NAME(es.database_id)))
+          (ec.client_net_address, es.[program_name], es.[host_name], es.login_name, ec.local_net_address, ec.local_tcp_port, DB_NAME(es.database_id)))
 ORDER BY 
      ec.client_net_address, es.[program_name]
      -- [connection count] DESC
