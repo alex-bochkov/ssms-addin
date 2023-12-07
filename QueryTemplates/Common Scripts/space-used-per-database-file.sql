@@ -45,6 +45,6 @@ SELECT
       ,[file_id]
       ,[FilegroupName]
 FROM #Stats
-ORDER BY AvailableSpaceInMB DESC;
+ORDER BY 6 DESC;
 
 -- DROP TABLE #Stats;
