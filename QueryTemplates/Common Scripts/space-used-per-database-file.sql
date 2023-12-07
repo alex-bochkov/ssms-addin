@@ -44,7 +44,7 @@ SELECT
       ,[PercentFree]
       ,[file_id]
       ,[FilegroupName]
-FROM [DBA].[dbo].[FileSizeStats]
+FROM #Stats
 ORDER BY AvailableSpaceInMB DESC;
 
-DROP TABLE #Stats;
+-- DROP TABLE #Stats;
