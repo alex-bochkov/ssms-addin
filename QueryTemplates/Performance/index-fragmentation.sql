@@ -19,7 +19,7 @@ SELECT s.[name] AS SchemaName,
 				IIF (ps.[name] IS NULL, 'ALL', CAST (ips.partition_number AS VARCHAR (4))), 
 				' WITH (ONLINE = ON (WAIT_AT_LOW_PRIORITY (MAX_DURATION = 1 MINUTES, ABORT_AFTER_WAIT = SELF)), ', 
 				'SORT_IN_TEMPDB = ON, DATA_COMPRESSION=PAGE, MAXDOP = 4);') END AS CmdRebuild
-FROM sys.dm_db_index_physical_stats(DB_ID(), OBJECT_ID('boxes.GLJEDetail'),
+FROM sys.dm_db_index_physical_stats(DB_ID(), NULL, -- OBJECT_ID('dbo.Table'),
 								NULL, NULL, NULL) AS ips
      INNER JOIN sys.tables AS t ON t.[object_id] = ips.[object_id]
      INNER JOIN sys.schemas AS s ON t.[schema_id] = s.[schema_id]
