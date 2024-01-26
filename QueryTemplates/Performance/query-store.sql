@@ -1,4 +1,5 @@
 SELECT DATEADD(hour, DATEDIFF(hour, 0, rs.first_execution_time), 0) AS first_execution,
+       sum(rs.count_executions) AS count_executions,
        sum(rs.count_executions * rs.avg_duration) AS total_duration,
        sum(rs.count_executions * rs.avg_duration) / SUM(rs.count_executions) AS avg_duration,
        sum(rs.count_executions * rs.avg_cpu_time) / SUM(rs.count_executions) AS avg_cpu_time,
