@@ -1,3 +1,7 @@
+# Repository Archived
+This repository is no longer active, as we have moved to a newer version. For the latest updates and features, please visit the new repository at [Axial SQL Tools](https://github.com/Axial-SQL/AxialSqlTools). We encourage you to check out the new version for the most up-to-date tools and improvements.
+
+<hr/>
 <h2>SQL Server Management Studio 2018 Productivity Tool (Addin)</h2>
 <p>Work in progress... I had to make it as an "ugly" toolbox window because I couldn't figure out how to make a dynamic menu in a toolbar.</p>
 <ul>
